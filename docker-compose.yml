@@ -6,14 +6,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-dukaops_db}
-      POSTGRES_USER: ${POSTGRES_USER:-dukaops}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dukaops_dev_password}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-3698}
     ports:
       - "5432:5432"
     volumes:
       - dukaops_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dukaops} -d ${POSTGRES_DB:-dukaops_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-dukaops_db}"]
       interval: 5s
       timeout: 5s
       retries: 10
