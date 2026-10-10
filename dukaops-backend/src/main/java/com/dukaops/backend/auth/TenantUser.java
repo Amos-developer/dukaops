@@ -10,7 +10,7 @@ import java.util.UUID;
 public class TenantUser {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, updatable = false)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -50,6 +50,7 @@ public class TenantUser {
             String passwordHash,
             UserRole role
     ) {
+        this.id = UUID.randomUUID();
         this.tenant = tenant;
         this.fullName = fullName;
         this.email = email;
@@ -60,11 +61,15 @@ public class TenantUser {
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+
         Instant now = Instant.now();
         createdAt = now;
         updatedAt = now;
     }
-
+    
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
