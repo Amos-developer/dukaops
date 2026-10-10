@@ -1,0 +1,108 @@
+package com.dukaops.backend.auth;
+import com.dukaops.backend.tenant.Tenant;
+
+import jakarta.persistence.*;
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity 
+@Table (name = "tenant_users")
+public class TenantUser {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false, updatable = false)
+    private Tenant tenant;
+
+    @Column(name = "full_name", nullable = false, length = 150)
+    private String fullName;
+
+    @Column(nullable = false, length = 254)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    protected TenantUser() {
+    }
+
+    public TenantUser(
+            Tenant tenant,
+            String fullName,
+            String email,
+            String passwordHash,
+            UserRole role
+    ) {
+        this.tenant = tenant;
+        this.fullName = fullName;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.status = UserStatus.ACTIVE;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+}
