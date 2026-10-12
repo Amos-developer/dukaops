@@ -13,6 +13,7 @@ import './styles/auth.css'
 import './styles/public.css'
 import './styles/login.css'
 import './styles/landing.css'
+import './styles/product-page.css'
 import App from './App'
 
 const queryClient = new QueryClient({
