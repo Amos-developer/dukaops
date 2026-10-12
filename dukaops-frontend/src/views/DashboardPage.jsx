@@ -6,7 +6,7 @@ import { CategoryDistribution, MovementTrend, StockByBranch } from '../component
 import { LowStockTable, MovementTable, ProductInsights } from '../components/dashboard/DashboardTables'
 
 export default function DashboardPage() {
-  const { data, isLoading, isError } = useDashboard()
+  const { data, isLoading, isError, error, refetch } = useDashboard()
   const computed = useMemo(() => {
     const products = data?.products || []
     const stock = data?.stock || []
@@ -29,7 +29,7 @@ export default function DashboardPage() {
     }
   }, [data])
   if (isLoading) return <div className="loading-state"><div className="spinner-border text-primary" role="status" /><p>Loading workspace data...</p></div>
-  if (isError) return <div className="loading-state"><strong>Unable to load live inventory data.</strong><p>Check that the backend is running and your frontend credentials are configured.</p></div>
+  if (isError) return <div className="loading-state error-state"><strong>Unable to load live inventory data.</strong><p>{error?.message || 'Check that the backend is running and your frontend credentials are configured.'}</p><button className="primary-btn" onClick={() => refetch()}>Try again</button></div>
   return <>
     <div className="kpi-grid dashboard-kpis"><KpiCard label="Active products" value={computed.activeProducts} change="Live" tone="blue" icon="products" /><KpiCard label="Total branches" value={computed.branches} change="Live" tone="purple" icon="branches" /><KpiCard label="Low-stock products" value={computed.lowStock} change="Live" trend="down" tone="orange" icon="orders" /><KpiCard label="Movements today" value={computed.movementsToday} change="Live" tone="teal" icon="expenses" /><KpiCard label="Inventory value" value={`KES ${computed.inventoryValue.toLocaleString()}`} change="Live" tone="blue" icon="revenue" /></div>
     <div className="analytics-grid"><StockByBranch branches={computed.branchChart} /><MovementTrend movements={computed.movements} /><CategoryDistribution /></div>

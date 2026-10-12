@@ -8,6 +8,7 @@ import './styles/layout.css'
 import './styles/dashboard.css'
 import './styles/section-page.css'
 import './styles/modules.css'
+import './styles/status.css'
 import App from './App'
 
 const queryClient = new QueryClient({

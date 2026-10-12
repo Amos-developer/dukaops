@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 function authHeaders() {
   const username = import.meta.env.VITE_API_USERNAME
@@ -8,8 +8,15 @@ function authHeaders() {
 }
 
 export async function apiFetch(path) {
-  const response = await fetch(`${API_URL}${path}`, { headers: { ...authHeaders() } })
-  if (!response.ok) throw new Error(`API request failed (${response.status})`)
+  let response
+  try {
+    response = await fetch(`${API_URL}${path}`, { headers: { ...authHeaders() } })
+  } catch {
+    throw new Error(`Backend is unreachable at ${API_URL}. Start Spring Boot and verify VITE_API_URL.`)
+  }
+  if (response.status === 401) throw new Error('Backend authentication failed. Set VITE_API_USERNAME and VITE_API_PASSWORD.')
+  if (response.status === 403) throw new Error('Backend rejected the request. Check CORS_ALLOWED_ORIGINS and user permissions.')
+  if (!response.ok) throw new Error(`API request failed for ${path} (${response.status})`)
   return response.json()
 }
 

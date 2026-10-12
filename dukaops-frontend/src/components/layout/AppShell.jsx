@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useIsFetching } from '@tanstack/react-query'
 import { Bell, Boxes, Building2, ChevronDown, ChevronRight, FileBarChart2, HelpCircle, LayoutDashboard, LogOut, Menu, Package, PanelLeftClose, PanelLeftOpen, Search, Settings, ShoppingCart, Store, Users, X } from 'lucide-react'
 
 const navGroups = [
@@ -27,6 +28,7 @@ const navGroups = [
 export default function AppShell({ children }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const isFetching = useIsFetching() > 0
   return (
     <div className="app-shell">
       <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-mobile-open' : ''}`}>
@@ -48,6 +50,7 @@ export default function AppShell({ children }) {
       {mobileOpen && <button className="sidebar-backdrop" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
       <main className={`main-content ${collapsed ? 'main-expanded' : ''}`}>
         <header className="topbar">
+          <div className={`topbar-progress ${isFetching ? 'visible' : ''}`} aria-hidden="true" />
           <button className="icon-btn mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open menu"><Menu size={21} /></button>
           <div className="business-context"><div className="business-logo">D</div><div><strong>DukaOps Demo</strong><span>Business workspace</span></div></div>
           <div className="branch-selector"><Building2 size={15} /><span>Main branch</span><ChevronDown size={14} /></div>
