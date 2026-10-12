@@ -29,6 +29,21 @@ export async function registerBusiness(payload) {
   return response.json()
 }
 
+export async function authenticate(email, password) {
+  let response
+  try {
+    response = await fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Basic ${btoa(`${email}:${password}`)}` },
+    })
+  } catch {
+    throw new Error('We could not connect to DukaOps right now. Please try again shortly.')
+  }
+  if (response.status === 401) throw new Error('We could not sign you in. Please check your email and password.')
+  if (response.status === 403) throw new Error('You do not have permission to access this workspace.')
+  if (!response.ok) throw new Error('Something went wrong while signing you in. Please try again.')
+  return response.json()
+}
+
 export async function apiFetch(path) {
   let response
   try {
