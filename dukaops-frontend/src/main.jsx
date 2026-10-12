@@ -16,6 +16,7 @@ import './styles/landing.css'
 import './styles/product-page.css'
 import './styles/inventory-page.css'
 import './styles/inventory-overrides.css'
+import './styles/movement-page.css'
 import './styles/theme.css'
 import App from './App'
 
