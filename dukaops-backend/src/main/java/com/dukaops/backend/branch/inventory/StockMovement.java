@@ -1,4 +1,4 @@
-package com.dukaops.backend.inventory;
+package com.dukaops.backend.branch.inventory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -56,6 +56,7 @@ public class StockMovement {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    // No argument constructor for JPA
     protected StockMovement() {
     }
 

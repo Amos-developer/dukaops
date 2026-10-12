@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository
         extends JpaRepository<Product, UUID> {
@@ -26,4 +28,13 @@ public interface ProductRepository
             String sku,
             UUID productId
     );
+
+    @Query("""
+    SELECT p FROM Product p
+    WHERE p.id = :productId
+      AND p.tenant.id = :tenantId""")
+    Optional<Product> findTenantScopedProductById(
+        @Param("productId") UUID productId,
+        @Param("tenantId") UUID tenantId
+);
 }

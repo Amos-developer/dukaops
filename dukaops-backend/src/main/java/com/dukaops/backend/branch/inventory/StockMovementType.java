@@ -1,4 +1,4 @@
-package com.dukaops.backend.inventory;
+package com.dukaops.backend.branch.inventory;
 
 public enum StockMovementType {
     RECEIPT,

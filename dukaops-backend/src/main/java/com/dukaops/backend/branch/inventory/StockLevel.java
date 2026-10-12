@@ -1,4 +1,4 @@
-package com.dukaops.backend.inventory;
+package com.dukaops.backend.branch.inventory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -63,7 +63,9 @@ public class StockLevel {
         this.branch = branch;
         this.product = product;
         this.quantity = BigDecimal.ZERO;
-        this.reorderLevel = reorderLevel;
+        this.reorderLevel = reorderLevel  == null
+            ? BigDecimal.ZERO
+            : reorderLevel;
     }
 
     public void applyQuantityChange(BigDecimal change) {
