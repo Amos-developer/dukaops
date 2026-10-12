@@ -14,6 +14,7 @@ import com.dukaops.backend.auth.TenantUserRepository;
 import com.dukaops.backend.branch.Branch;
 import com.dukaops.backend.branch.BranchRepository;
 import com.dukaops.backend.branch.inventory.StockLevel;
+import com.dukaops.backend.branch.inventory.StockMovement;
 import com.dukaops.backend.branch.inventory.repository.StockLevelRepository;
 import com.dukaops.backend.branch.inventory.repository.StockMovementRepository;
 import com.dukaops.backend.branch.inventory.StockMovementType;

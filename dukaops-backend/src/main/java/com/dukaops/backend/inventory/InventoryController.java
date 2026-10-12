@@ -32,7 +32,7 @@ public class InventoryController {
     ) {
         return inventoryService.receiveStock(
                 principal.getTenantId(),
-                principal.getId(),
+                principal.getUserId(),
                 request
         );
     }
@@ -44,7 +44,7 @@ public class InventoryController {
     ) {
         return inventoryService.adjustStock(
                 principal.getTenantId(),
-                principal.getId(),
+                principal.getUserId(),
                 request
         );
     }
