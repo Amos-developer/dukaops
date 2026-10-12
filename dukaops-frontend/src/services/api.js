@@ -18,4 +18,5 @@ export const api = {
   products: () => apiFetch('/products'),
   branches: (tenantId) => apiFetch(`/tenants/${tenantId}/branches`),
   stock: (branchId) => apiFetch(`/inventory/branches/${branchId}/stock`),
+  branchMovements: (branchId) => apiFetch(`/inventory/branches/${branchId}/movements`),
 }

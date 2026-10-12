@@ -224,6 +224,40 @@ public class InventoryService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<StockMovementResponse> getBranchMovementHistory(
+            UUID tenantId,
+            UUID branchId
+    ) {
+        branchRepository.findTenantScopedBranchById(branchId, tenantId)
+                .orElseThrow(() -> notFound("Branch not found for this business."));
+
+        return stockMovementRepository
+                .findBranchMovementHistory(tenantId, branchId)
+                .stream()
+                .map(this::toMovementResponse)
+                .toList();
+    }
+
+    private StockMovementResponse toMovementResponse(StockMovement movement) {
+        return new StockMovementResponse(
+                movement.getId(),
+                movement.getBranch().getId(),
+                movement.getProduct().getId(),
+                movement.getMovementType(),
+                movement.getQuantityChange(),
+                movement.getQuantityAfter(),
+                movement.getReference(),
+                movement.getNotes(),
+                movement.getPerformedBy() == null
+                        ? null
+                        : movement.getPerformedBy().getId(),
+                movement.getCreatedAt() == null
+                        ? null
+                        : movement.getCreatedAt().toString()
+        );
+    }
+
     private StockResponse toStockResponse(StockLevel stock) {
         boolean lowStock =
                 stock.getReorderLevel().compareTo(BigDecimal.ZERO) > 0

@@ -30,4 +30,15 @@ public interface StockMovementRepository
                 @Param("branchId") UUID branchId,
                 @Param("productId") UUID productId
 );
+
+        @Query("""
+            SELECT m FROM StockMovement m
+            WHERE m.tenant.id = :tenantId
+            AND m.branch.id = :branchId
+            ORDER BY m.createdAt DESC
+            """)
+        List<StockMovement> findBranchMovementHistory(
+                @Param("tenantId") UUID tenantId,
+                @Param("branchId") UUID branchId
+        );
 }

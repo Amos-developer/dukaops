@@ -23,6 +23,8 @@ services:
       context: ./dukaops-frontend
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+        VITE_API_USERNAME: ${VITE_API_USERNAME:-}
+        VITE_API_PASSWORD: ${VITE_API_PASSWORD:-}
     container_name: dukaops-frontend
     restart: unless-stopped
     ports:

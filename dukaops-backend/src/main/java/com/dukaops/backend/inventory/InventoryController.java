@@ -72,4 +72,15 @@ public class InventoryController {
                 productId
         );
     }
+
+    @GetMapping("/branches/{branchId}/movements")
+    public List<StockMovementResponse> getBranchMovementHistory(
+            @AuthenticationPrincipal TenantUserPrincipal principal,
+            @PathVariable UUID branchId
+    ) {
+        return inventoryService.getBranchMovementHistory(
+                principal.getTenantId(),
+                branchId
+        );
+    }
 }
