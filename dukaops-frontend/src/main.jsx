@@ -14,6 +14,9 @@ import './styles/public.css'
 import './styles/login.css'
 import './styles/landing.css'
 import './styles/product-page.css'
+import './styles/inventory-page.css'
+import './styles/inventory-overrides.css'
+import './styles/theme.css'
 import App from './App'
 
 const queryClient = new QueryClient({

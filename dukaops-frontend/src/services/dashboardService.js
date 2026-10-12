@@ -28,7 +28,8 @@ export async function getInventoryPageData() {
   const branches = await api.branches(user.tenantId)
   const branch = branches.find((item) => item.isMain) || branches[0]
   const stock = branch ? await api.stock(branch.id) : []
-  return { branches, stock, selectedBranch: branch, isDemo: false }
+  const movements = branch ? await api.branchMovements(branch.id) : []
+  return { branches, stock, movements, selectedBranch: branch, isDemo: false }
 }
 
 export async function getBranchesPageData() {
