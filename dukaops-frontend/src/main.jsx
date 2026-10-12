@@ -20,7 +20,9 @@ import './styles/movement-page.css'
 import './styles/page-heading-overrides.css'
 import './styles/crud.css'
 import './styles/theme.css'
+import './styles/feedback.css'
 import App from './App'
+import { FeedbackProvider } from './components/ui/FeedbackProvider'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -30,7 +32,7 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <App />
+        <FeedbackProvider><App /></FeedbackProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>,

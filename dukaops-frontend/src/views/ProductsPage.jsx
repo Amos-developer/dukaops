@@ -17,6 +17,7 @@ import { useProducts } from '../hooks/useModuleData'
 import StatusBadge from '../components/ui/StatusBadge'
 import CrudModal from '../components/ui/CrudModal'
 import { api } from '../services/api'
+import { useFeedback } from '../components/ui/FeedbackProvider'
 
 const tabs = [
   { key: 'ALL', label: 'All' },
@@ -56,6 +57,7 @@ function ProductStatus({ status }) {
 export default function ProductsPage() {
   const { data, isLoading, isError } = useProducts()
   const queryClient = useQueryClient()
+  const feedback = useFeedback()
   const [search, setSearch] = useState('')
   const [statusTab, setStatusTab] = useState('ALL')
   const [selected, setSelected] = useState([])
@@ -78,8 +80,8 @@ export default function ProductsPage() {
   const selectAll = () => setSelected(selected.length === products.length ? [] : products.map((product) => product.id))
   const openCreate = () => { setForm({ sku: '', name: '', description: '', unitPrice: '', costPrice: '' }); setFormError(''); setModal({ type: 'create' }) }
   const openEdit = (product) => { setForm({ sku: product.sku || '', name: product.name || '', description: product.description || '', unitPrice: product.unitPrice || '', costPrice: product.costPrice || '' }); setFormError(''); setModal({ type: 'edit', product }) }
-  const submitProduct = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { const payload = { ...form, unitPrice: Number(form.unitPrice), costPrice: form.costPrice === '' ? null : Number(form.costPrice) }; if (modal.type === 'create') await api.createProduct(payload); else await api.updateProduct(modal.product.id, payload); await queryClient.invalidateQueries({ queryKey: ['products'] }); setModal(null) } catch (error) { setFormError(error.message) } finally { setSaving(false) } }
-  const toggleStatus = async (product) => { setSaving(true); try { await api.changeProductStatus(product.id, product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'); await queryClient.invalidateQueries({ queryKey: ['products'] }) } catch (error) { setFormError(error.message); setModal({ type: 'error' }) } finally { setSaving(false) } }
+  const submitProduct = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { const payload = { ...form, unitPrice: Number(form.unitPrice), costPrice: form.costPrice === '' ? null : Number(form.costPrice) }; if (modal.type === 'create') { await api.createProduct(payload); feedback.success('Product created successfully.') } else { await api.updateProduct(modal.product.id, payload); feedback.success('Product updated successfully.') } await queryClient.invalidateQueries({ queryKey: ['products'] }); setModal(null) } catch (error) { setFormError(error.message); feedback.error(error.message) } finally { setSaving(false) } }
+  const toggleStatus = async (product) => { setSaving(true); try { const nextStatus = product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; await api.changeProductStatus(product.id, nextStatus); await queryClient.invalidateQueries({ queryKey: ['products'] }); feedback.success(nextStatus === 'ACTIVE' ? 'Product activated successfully.' : 'Product archived successfully.') } catch (error) { setFormError(error.message); feedback.error(error.message); setModal({ type: 'error' }) } finally { setSaving(false) } }
 
   return (
     <section className="module-page products-page">

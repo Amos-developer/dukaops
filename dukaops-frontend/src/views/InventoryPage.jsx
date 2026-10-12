@@ -5,6 +5,7 @@ import { useInventory } from '../hooks/useModuleData'
 import StatusBadge from '../components/ui/StatusBadge'
 import CrudModal from '../components/ui/CrudModal'
 import { api } from '../services/api'
+import { useFeedback } from '../components/ui/FeedbackProvider'
 
 const tabs = [{ key: 'ALL', label: 'All Products' }, { key: 'LOW', label: 'Low Stock' }, { key: 'OUT', label: 'Out of Stock' }]
 const number = (value) => Number(value || 0).toLocaleString()
@@ -18,6 +19,7 @@ function MovementIcon({ type }) { const receiving = type === 'RECEIPT'; return <
 export default function InventoryPage() {
   const { data, isLoading, isError } = useInventory()
   const queryClient = useQueryClient()
+  const feedback = useFeedback()
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('ALL')
   const [branch, setBranch] = useState('ALL')
@@ -44,7 +46,7 @@ export default function InventoryPage() {
   const totalQuantity = stock.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
   const healthy = stock.filter((item) => !item.lowStock && Number(item.quantity) > 0).length
   const openStockModal = (type) => { setForm({ branchId: data?.selectedBranch?.id || branches[0]?.id || '', productId: data?.products?.[0]?.id || '', quantity: '', reorderLevel: '', quantityChange: '', reference: '', notes: '' }); setFormError(''); setModal(type) }
-  const submitStock = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { if (modal === 'receive') await api.receiveStock({ branchId: form.branchId, productId: form.productId, quantity: Number(form.quantity), reorderLevel: form.reorderLevel === '' ? null : Number(form.reorderLevel), reference: form.reference, notes: form.notes }); else await api.adjustStock({ branchId: form.branchId, productId: form.productId, quantityChange: Number(form.quantityChange), reference: form.reference, notes: form.notes }); await queryClient.invalidateQueries({ queryKey: ['inventory'] }); await queryClient.invalidateQueries({ queryKey: ['stock-movements'] }); await queryClient.invalidateQueries({ queryKey: ['dashboard'] }); setModal(null) } catch (error) { setFormError(error.message) } finally { setSaving(false) } }
+  const submitStock = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { if (modal === 'receive') { await api.receiveStock({ branchId: form.branchId, productId: form.productId, quantity: Number(form.quantity), reorderLevel: form.reorderLevel === '' ? null : Number(form.reorderLevel), reference: form.reference, notes: form.notes }); feedback.success('Stock received successfully.') } else { await api.adjustStock({ branchId: form.branchId, productId: form.productId, quantityChange: Number(form.quantityChange), reference: form.reference, notes: form.notes }); feedback.success('Stock adjustment saved successfully.') } await queryClient.invalidateQueries({ queryKey: ['inventory'] }); await queryClient.invalidateQueries({ queryKey: ['stock-movements'] }); await queryClient.invalidateQueries({ queryKey: ['dashboard'] }); setModal(null) } catch (error) { setFormError(error.message); feedback.error(error.message) } finally { setSaving(false) } }
   const cycleBranch = () => setBranch((current) => {
     const options = ['ALL', ...branches.map((item) => item.id)]
     return options[(options.indexOf(current) + 1) % options.length]
