@@ -23,7 +23,9 @@ function authHeaders() {
 
 export async function registerBusiness(payload) {
   const response = await fetch(`${API_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-  if (!response.ok) throw new Error((await response.text()) || `Registration failed (${response.status})`)
+  if (response.status === 409) throw new Error('That business or email is already registered. Try a different value.')
+  if (response.status === 400) throw new Error('Please review the information and try again.')
+  if (!response.ok) throw new Error('We could not create your workspace right now. Please try again shortly.')
   return response.json()
 }
 
@@ -32,11 +34,12 @@ export async function apiFetch(path) {
   try {
     response = await fetch(`${API_URL}${path}`, { headers: { ...authHeaders() } })
   } catch {
-    throw new Error(`Backend is unreachable at ${API_URL}. Start Spring Boot and verify VITE_API_URL.`)
+    throw new Error('We could not connect to DukaOps right now. Please try again shortly.')
   }
-  if (response.status === 401) throw new Error('Backend authentication failed. Set VITE_API_USERNAME and VITE_API_PASSWORD.')
-  if (response.status === 403) throw new Error('Backend rejected the request. Check CORS_ALLOWED_ORIGINS and user permissions.')
-  if (!response.ok) throw new Error(`API request failed for ${path} (${response.status})`)
+  if (response.status === 401) throw new Error('We could not sign you in. Please check your email and password.')
+  if (response.status === 403) throw new Error('You do not have permission to complete this action.')
+  if (response.status >= 500) throw new Error('DukaOps is temporarily unavailable. Please try again shortly.')
+  if (!response.ok) throw new Error('Something went wrong while processing your request.')
   return response.json()
 }
 
