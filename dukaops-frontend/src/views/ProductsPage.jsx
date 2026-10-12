@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Check,
   Download,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react'
 import { useProducts } from '../hooks/useModuleData'
 import StatusBadge from '../components/ui/StatusBadge'
+import CrudModal from '../components/ui/CrudModal'
+import { api } from '../services/api'
 
 const tabs = [
   { key: 'ALL', label: 'All' },
@@ -52,10 +55,15 @@ function ProductStatus({ status }) {
 
 export default function ProductsPage() {
   const { data, isLoading, isError } = useProducts()
+  const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [statusTab, setStatusTab] = useState('ALL')
   const [selected, setSelected] = useState([])
   const [view, setView] = useState('list')
+  const [modal, setModal] = useState(null)
+  const [form, setForm] = useState({ sku: '', name: '', description: '', unitPrice: '', costPrice: '' })
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState('')
   const allProducts = data?.products || []
 
   const products = useMemo(() => allProducts.filter((product) => {
@@ -68,12 +76,16 @@ export default function ProductsPage() {
   const totalValue = allProducts.reduce((sum, product) => sum + Number(product.unitPrice || 0), 0)
   const toggleSelected = (id) => setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
   const selectAll = () => setSelected(selected.length === products.length ? [] : products.map((product) => product.id))
+  const openCreate = () => { setForm({ sku: '', name: '', description: '', unitPrice: '', costPrice: '' }); setFormError(''); setModal({ type: 'create' }) }
+  const openEdit = (product) => { setForm({ sku: product.sku || '', name: product.name || '', description: product.description || '', unitPrice: product.unitPrice || '', costPrice: product.costPrice || '' }); setFormError(''); setModal({ type: 'edit', product }) }
+  const submitProduct = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { const payload = { ...form, unitPrice: Number(form.unitPrice), costPrice: form.costPrice === '' ? null : Number(form.costPrice) }; if (modal.type === 'create') await api.createProduct(payload); else await api.updateProduct(modal.product.id, payload); await queryClient.invalidateQueries({ queryKey: ['products'] }); setModal(null) } catch (error) { setFormError(error.message) } finally { setSaving(false) } }
+  const toggleStatus = async (product) => { setSaving(true); try { await api.changeProductStatus(product.id, product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'); await queryClient.invalidateQueries({ queryKey: ['products'] }) } catch (error) { setFormError(error.message); setModal({ type: 'error' }) } finally { setSaving(false) } }
 
   return (
     <section className="module-page products-page">
       <div className="products-heading module-heading">
         <div><p className="eyebrow">CATALOGUE</p><h1>Products</h1><p>Manage inventory, pricing and availability across your store.</p></div>
-        <div className="products-heading-actions"><button className="secondary-btn"><Download size={15} /> Export</button><button className="primary-btn"><Plus size={15} /> Add product</button></div>
+        <div className="products-heading-actions"><button className="secondary-btn"><Download size={15} /> Export</button><button className="primary-btn" onClick={openCreate}><Plus size={15} /> Add product</button></div>
       </div>
 
       <div className="products-kpis">
@@ -97,13 +109,15 @@ export default function ProductsPage() {
         {!isLoading && !isError && !products.length && <div className="table-loading">No products match your current filters.</div>}
         {!isLoading && !isError && products.length > 0 && <>
           <div className="table-responsive products-desktop-table">
-            <table className="table products-table"><thead><tr><th><input type="checkbox" checked={products.length > 0 && selected.length === products.length} onChange={selectAll} aria-label="Select all products" /></th><th>Product name</th><th>ID &amp; create date</th><th>Price</th><th>Stock</th><th>Status</th><th /></tr></thead><tbody>{products.map((product) => <tr key={product.id}><td><input type="checkbox" checked={selected.includes(product.id)} onChange={() => toggleSelected(product.id)} aria-label={`Select ${product.name}`} /></td><td><ProductIdentity product={product} /></td><td><strong>{product.sku || `#${product.id}`}</strong><small className="table-subtext">{formatDate(product.createdAt)}</small></td><td><strong>TSH {Number(product.unitPrice || 0).toLocaleString()}</strong><small className="table-subtext">Unit price</small></td><td>—</td><td><ProductStatus status={product.status} /></td><td className="text-end"><button className="icon-btn" aria-label={`More actions for ${product.name}`}><MoreHorizontal size={17} /></button></td></tr>)}</tbody></table>
+            <table className="table products-table"><thead><tr><th><input type="checkbox" checked={products.length > 0 && selected.length === products.length} onChange={selectAll} aria-label="Select all products" /></th><th>Product name</th><th>ID &amp; create date</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>{products.map((product) => <tr key={product.id}><td><input type="checkbox" checked={selected.includes(product.id)} onChange={() => toggleSelected(product.id)} aria-label={`Select ${product.name}`} /></td><td><ProductIdentity product={product} /></td><td><strong>{product.sku || `#${product.id}`}</strong><small className="table-subtext">{formatDate(product.createdAt)}</small></td><td><strong>TSH {Number(product.unitPrice || 0).toLocaleString()}</strong><small className="table-subtext">Unit price</small></td><td>—</td><td><ProductStatus status={product.status} /></td><td><div className="row-actions"><button className="row-action" onClick={() => openEdit(product)}>Edit</button><button className="row-action" onClick={() => toggleStatus(product)} disabled={saving}>{product.status === 'ACTIVE' ? 'Archive' : 'Activate'}</button></div></td></tr>)}</tbody></table>
           </div>
           <div className="products-mobile-list">{products.map((product) => <article className="product-mobile-card" key={product.id}><div className="product-mobile-top"><input type="checkbox" checked={selected.includes(product.id)} onChange={() => toggleSelected(product.id)} aria-label={`Select ${product.name}`} /><ProductIdentity product={product} /><button className="icon-btn"><MoreHorizontal size={17} /></button></div><div className="product-mobile-meta"><span><small>SKU</small><strong>{product.sku || `#${product.id}`}</strong></span><span><small>Price</small><strong>TSH {Number(product.unitPrice || 0).toLocaleString()}</strong></span><span><small>Status</small><ProductStatus status={product.status} /></span></div></article>)}</div>
         </>}
       </div>
 
       {selected.length > 0 && <div className="bulk-bar"><span>{selected.length} Selected</span><button><Download size={15} /> Export</button><button><span>↗</span> Edit info</button><button><Trash2 size={15} /> Delete</button><button className="bulk-close" onClick={() => setSelected([])} aria-label="Clear selected products"><X size={16} /></button></div>}
+      {modal && modal.type !== 'error' && <CrudModal title={modal.type === 'create' ? 'Add product' : 'Edit product'} description="Keep your catalogue details accurate and ready for stock operations." onClose={() => setModal(null)} onSubmit={submitProduct} submitLabel={modal.type === 'create' ? 'Create product' : 'Save product'} busy={saving} error={formError}><div className="crud-form-grid"><div className="crud-field"><label htmlFor="product-sku">SKU</label><input id="product-sku" required value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-name">Product name</label><input id="product-name" required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-price">Unit price (TSH)</label><input id="product-price" type="number" min="0" step="0.01" required value={form.unitPrice} onChange={(event) => setForm({ ...form, unitPrice: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-cost">Cost price (TSH)</label><input id="product-cost" type="number" min="0" step="0.01" value={form.costPrice} onChange={(event) => setForm({ ...form, costPrice: event.target.value })} /></div><div className="crud-field full"><label htmlFor="product-description">Description</label><textarea id="product-description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div></div></CrudModal>}
+      {modal?.type === 'error' && <CrudModal title="Could not update product" onClose={() => setModal(null)} onSubmit={(event) => { event.preventDefault(); setModal(null) }} submitLabel="Close" error={formError}><p className="crud-help">Please try again after checking your connection.</p></CrudModal>}
     </section>
   )
 }

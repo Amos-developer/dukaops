@@ -25,11 +25,11 @@ export async function getProductsPageData() {
 
 export async function getInventoryPageData() {
   const user = await api.currentUser()
-  const branches = await api.branches(user.tenantId)
+  const [branches, products] = await Promise.all([api.branches(user.tenantId), api.products()])
   const branch = branches.find((item) => item.isMain) || branches[0]
   const stock = branch ? await api.stock(branch.id) : []
   const movements = branch ? await api.branchMovements(branch.id) : []
-  return { branches, stock, movements, selectedBranch: branch, isDemo: false }
+  return { branches, products, stock, movements, selectedBranch: branch, isDemo: false }
 }
 
 export async function getBranchesPageData() {

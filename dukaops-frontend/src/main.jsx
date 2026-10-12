@@ -18,6 +18,7 @@ import './styles/inventory-page.css'
 import './styles/inventory-overrides.css'
 import './styles/movement-page.css'
 import './styles/page-heading-overrides.css'
+import './styles/crud.css'
 import './styles/theme.css'
 import App from './App'
 

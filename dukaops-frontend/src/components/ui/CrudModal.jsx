@@ -1,0 +1,5 @@
+import { X } from 'lucide-react'
+
+export default function CrudModal({ title, description, onClose, onSubmit, submitLabel = 'Save changes', busy = false, error, children }) {
+  return <div className="crud-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><div className="crud-modal" role="dialog" aria-modal="true" aria-labelledby="crud-modal-title"><div className="crud-modal-heading"><div><h2 id="crud-modal-title">{title}</h2>{description && <p>{description}</p>}</div><button type="button" className="icon-btn" onClick={onClose} aria-label="Close dialog"><X size={18} /></button></div>{error && <div className="crud-modal-error">{error}</div>}<form onSubmit={onSubmit}><div className="crud-modal-body">{children}</div><div className="crud-modal-actions"><button type="button" className="secondary-btn" onClick={onClose}>Cancel</button><button type="submit" className="primary-btn" disabled={busy}>{busy ? 'Saving...' : submitLabel}</button></div></form></div></div>
+}

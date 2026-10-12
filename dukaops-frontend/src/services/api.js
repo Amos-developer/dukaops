@@ -58,10 +58,31 @@ export async function apiFetch(path) {
   return response.json()
 }
 
+async function apiRequest(path, method, payload) {
+  let response
+  try {
+    response = await fetch(`${API_URL}${path}`, { method, headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: payload === undefined ? undefined : JSON.stringify(payload) })
+  } catch {
+    throw new Error('We could not connect to DukaOps right now. Please try again shortly.')
+  }
+  if (response.status === 401) throw new Error('We could not sign you in. Please check your email and password.')
+  if (response.status === 403) throw new Error('You do not have permission to complete this action.')
+  if (response.status === 400) throw new Error('Please review the form details and try again.')
+  if (response.status === 409) throw new Error('This record already exists. Please use different details.')
+  if (!response.ok) throw new Error('Something went wrong while saving your changes.')
+  return response.status === 204 ? null : response.json()
+}
+
 export const api = {
   currentUser: () => apiFetch('/auth/me'),
   products: () => apiFetch('/products'),
   branches: (tenantId) => apiFetch(`/tenants/${tenantId}/branches`),
   stock: (branchId) => apiFetch(`/inventory/branches/${branchId}/stock`),
   branchMovements: (branchId) => apiFetch(`/inventory/branches/${branchId}/movements`),
+  createProduct: (payload) => apiRequest('/products', 'POST', payload),
+  updateProduct: (productId, payload) => apiRequest(`/products/${productId}`, 'PUT', payload),
+  changeProductStatus: (productId, status) => apiRequest(`/products/${productId}/status`, 'PATCH', { status }),
+  createBranch: (tenantId, payload) => apiRequest(`/tenants/${tenantId}/branches`, 'POST', payload),
+  receiveStock: (payload) => apiRequest('/inventory/receipts', 'POST', payload),
+  adjustStock: (payload) => apiRequest('/inventory/adjustments', 'POST', payload),
 }
