@@ -11,6 +11,7 @@ import './styles/modules.css'
 import './styles/status.css'
 import './styles/auth.css'
 import './styles/public.css'
+import './styles/login.css'
 import App from './App'
 
 const queryClient = new QueryClient({
