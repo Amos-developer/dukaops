@@ -57,3 +57,9 @@ export async function getStockMovementsPageData() {
     isDemo: false,
   }
 }
+
+export async function getTeamPageData() {
+  const user = await api.currentUser()
+  const branches = await api.branches(user.tenantId)
+  return { user, branches, isDemo: false }
+}
