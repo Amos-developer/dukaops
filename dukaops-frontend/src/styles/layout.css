@@ -1,5 +1,6 @@
 /* Fixed application chrome: only the page content participates in document scrolling. */
-.sidebar { position: fixed; inset: 0 auto 0 0; height: 100vh; overflow-y: auto; }
+.sidebar { position: fixed; inset: 0 auto 0 0; height: 100vh; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.sidebar::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .main-content { margin-left: 248px; width: calc(100% - 248px); min-height: 100vh; }
 .main-expanded { margin-left: 82px; width: calc(100% - 82px); }
 .topbar { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(14px); }
