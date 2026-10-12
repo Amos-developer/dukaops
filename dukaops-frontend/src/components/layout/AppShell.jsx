@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useIsFetching } from '@tanstack/react-query'
+import { clearCredentials } from '../../services/api'
 import { Bell, Boxes, Building2, ChevronDown, ChevronRight, FileBarChart2, HelpCircle, LayoutDashboard, LogOut, Menu, Package, PanelLeftClose, PanelLeftOpen, Search, Settings, ShoppingCart, Store, Users, X } from 'lucide-react'
 
 const navGroups = [
-  { label: 'Overview', items: [{ label: 'Dashboard', path: '/', icon: LayoutDashboard }] },
+  { label: 'Overview', items: [{ label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }] },
   {
     label: 'MVP',
     items: [
@@ -29,6 +30,7 @@ export default function AppShell({ children }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const isFetching = useIsFetching() > 0
+  const logout = () => { clearCredentials(); window.location.href = '/auth' }
   return (
     <div className="app-shell">
       <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-mobile-open' : ''}`}>
@@ -43,7 +45,7 @@ export default function AppShell({ children }) {
           <div className="workspace-label"><span>Manage</span></div>
           <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><Settings size={18} /><span>Settings</span><ChevronRight className="nav-chevron" size={15} /></NavLink>
           <button className="nav-item"><HelpCircle size={18} /><span>Help center</span></button>
-          <button className="nav-item logout"><LogOut size={18} /><span>Log out</span></button>
+          <button className="nav-item logout" onClick={logout}><LogOut size={18} /><span>Log out</span></button>
         </div>
         <button className="collapse-btn" onClick={() => setCollapsed((value) => !value)}>{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}<span>{collapsed ? 'Expand' : 'Collapse'}</span></button>
       </aside>
@@ -55,7 +57,7 @@ export default function AppShell({ children }) {
           <div className="business-context"><div className="business-logo">D</div><div><strong>DukaOps Demo</strong><span>Business workspace</span></div></div>
           <div className="branch-selector"><Building2 size={15} /><span>Main branch</span><ChevronDown size={14} /></div>
           <div className="search-box"><Search size={17} /><input placeholder="Search products, reports..." aria-label="Search" /></div>
-          <div className="topbar-actions"><button className="icon-btn"><Bell size={19} /><span className="notification-dot" /></button><div className="profile"><div className="avatar">AM</div><div className="profile-copy"><strong>Amos M.</strong><small>Administrator</small></div><ChevronDown size={15} /></div><button className="logout-top"><LogOut size={15} /><span>Log out</span></button></div>
+          <div className="topbar-actions"><button className="icon-btn"><Bell size={19} /><span className="notification-dot" /></button><div className="profile"><div className="avatar">AM</div><div className="profile-copy"><strong>Amos M.</strong><small>Administrator</small></div><ChevronDown size={15} /></div><button className="logout-top" onClick={logout}><LogOut size={15} /><span>Log out</span></button></div>
         </header>
         <div className="page-content">{children || <Outlet />}</div>
       </main>

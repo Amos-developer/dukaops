@@ -1,0 +1,8 @@
+import { Link } from 'react-router-dom'
+import { ArrowUpRight, Check, Menu, X } from 'lucide-react'
+import { useState } from 'react'
+
+export default function PublicLayout({ children }) {
+  const [open, setOpen] = useState(false)
+  return <div className="public-site"><header className="public-nav"><Link to="/" className="public-brand"><span>D</span><strong>Duka<span>Ops</span></strong></Link><button className="public-menu" onClick={() => setOpen((value) => !value)} aria-label="Toggle navigation">{open ? <X size={20} /> : <Menu size={20} />}</button><nav className={open ? 'public-links open' : 'public-links'}><a href="#services" onClick={() => setOpen(false)}>Services</a><a href="#about" onClick={() => setOpen(false)}>About</a><Link to="/login" onClick={() => setOpen(false)}>Log in</Link><Link to="/register" className="public-cta" onClick={() => setOpen(false)}>Get started <ArrowUpRight size={15} /></Link></nav></header><main>{children}</main><footer className="public-footer"><div className="footer-main"><div><Link to="/" className="public-brand"><span>D</span><strong>Duka<span>Ops</span></strong></Link><p>Simple, reliable inventory operations for growing businesses.</p></div><div className="footer-links"><div><strong>Product</strong><a href="#services">Inventory</a><a href="#services">Branch management</a><a href="#services">Stock insights</a></div><div><strong>Company</strong><a href="#about">About us</a><a href="mailto:hello@dukaops.com">Contact</a><Link to="/register">Get started</Link></div></div></div><div className="footer-bottom"><span>© 2026 DukaOps. Built for better operations.</span><span className="footer-status"><i /> All systems designed for clarity</span></div></footer></div>
+}

@@ -1,10 +1,30 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+const credentialKey = 'dukaops.credentials'
+
+export function getStoredCredentials() {
+  try { return JSON.parse(localStorage.getItem(credentialKey) || 'null') } catch { return null }
+}
+
+export function saveCredentials(email, password) {
+  localStorage.setItem(credentialKey, JSON.stringify({ email, password }))
+}
+
+export function clearCredentials() {
+  localStorage.removeItem(credentialKey)
+}
 
 function authHeaders() {
-  const username = import.meta.env.VITE_API_USERNAME
-  const password = import.meta.env.VITE_API_PASSWORD
+  const stored = getStoredCredentials()
+  const username = stored?.email || import.meta.env.VITE_API_USERNAME
+  const password = stored?.password || import.meta.env.VITE_API_PASSWORD
   if (!username || !password) return {}
   return { Authorization: `Basic ${btoa(`${username}:${password}`)}` }
+}
+
+export async function registerBusiness(payload) {
+  const response = await fetch(`${API_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+  if (!response.ok) throw new Error((await response.text()) || `Registration failed (${response.status})`)
+  return response.json()
 }
 
 export async function apiFetch(path) {
