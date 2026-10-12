@@ -1,0 +1,7 @@
+.section-page { min-height: calc(100vh - 150px); display: grid; align-content: start; justify-items: start; padding-top: 12px; }
+.section-page-icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; color: #3184ee; background: #edf5ff; margin-bottom: 24px; }
+.section-page .eyebrow { margin-left: 0; margin-bottom: 8px; }
+.section-page h1 { margin: 0; font-size: clamp(27px, 4vw, 38px); letter-spacing: -.04em; }
+.section-page-description { color: #7a8794; max-width: 580px; line-height: 1.7; margin: 12px 0 28px; font-size: 14px; }
+.section-page-card { display: grid; gap: 8px; width: min(600px, 100%); padding: 22px; background: #fff; border: 1px solid #e8eef2; border-radius: 14px; box-shadow: 0 6px 22px rgba(42, 64, 82, .035); }
+.section-page-card strong { font-size: 14px; }.section-page-card span { color: #7a8794; font-size: 12px; line-height: 1.6; }
