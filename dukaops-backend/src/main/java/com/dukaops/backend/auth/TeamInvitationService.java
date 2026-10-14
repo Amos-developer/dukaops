@@ -62,6 +62,18 @@ public class TeamInvitationService {
         return new TeamInvitationResponse(invitation.getId(), email, request.role(), invitation.getExpiresAt(), token);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<com.dukaops.backend.auth.dto.TeamInvitationListResponse> list(TenantUserPrincipal actor) {
+        requireAdmin(actor);
+        Instant now = Instant.now();
+        return invitationRepository.findByTenant_IdAndAcceptedAtIsNull(actor.getTenantId()).stream()
+                .map(invitation -> new com.dukaops.backend.auth.dto.TeamInvitationListResponse(
+                        invitation.getId(), invitation.getFullName(), invitation.getEmail(), invitation.getRole(),
+                        Set.copyOf(invitation.getBranchIds()), invitation.getExpiresAt(),
+                        invitation.getExpiresAt().isAfter(now) ? "PENDING" : "EXPIRED"))
+                .toList();
+    }
+
     @Transactional
     public TeamUserResponse accept(String rawToken, AcceptTeamInvitationRequest request) {
         TeamInvitation invitation = invitationRepository.findByTokenHash(hash(rawToken)).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "Invitation is invalid or has expired."));

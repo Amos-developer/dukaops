@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 public class TeamInvitationController {
     private final TeamInvitationService service;
     public TeamInvitationController(TeamInvitationService service) { this.service = service; }
+    @GetMapping
+    public java.util.List<com.dukaops.backend.auth.dto.TeamInvitationListResponse> list(@AuthenticationPrincipal TenantUserPrincipal principal) {
+        return service.list(principal);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

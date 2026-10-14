@@ -54,6 +54,9 @@ export async function apiFetch(path) {
   if (response.status === 401) throw new Error('We could not sign you in. Please check your email and password.')
   if (response.status === 403) throw new Error('You do not have permission to complete this action.')
   if (response.status >= 500) throw new Error('DukaOps is temporarily unavailable. Please try again shortly.')
+  if ((response.status === 404 || response.status === 405) && path.startsWith('/team/invitations')) {
+    throw new Error('Invitation listing is unavailable on the running server. Please restart the backend with the latest application version.')
+  }
   if (!response.ok) throw new Error('Something went wrong while processing your request.')
   return response.json()
 }
@@ -78,6 +81,7 @@ export const api = {
   settings: (section) => apiFetch(`/settings/${section}`),
   saveSettings: (section, payload) => apiRequest(`/settings/${section}`, 'PUT', payload),
   currentUser: () => apiFetch('/auth/me'),
+  teamInvitations: () => apiFetch('/team/invitations'),
   products: () => apiFetch('/products'),
   branches: (tenantId) => apiFetch(`/tenants/${tenantId}/branches`),
   stock: (branchId) => apiFetch(`/inventory/branches/${branchId}/stock`),
