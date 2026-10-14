@@ -60,6 +60,6 @@ export async function getStockMovementsPageData() {
 
 export async function getTeamPageData() {
   const user = await api.currentUser()
-  const branches = await api.branches(user.tenantId)
-  return { user, branches, isDemo: false }
+  const [branches, team] = await Promise.all([api.branches(user.tenantId), api.teamUsers()])
+  return { user, branches, team, users: team?.content || [], isDemo: false }
 }

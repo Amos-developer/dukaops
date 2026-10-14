@@ -85,4 +85,15 @@ export const api = {
   createBranch: (tenantId, payload) => apiRequest(`/tenants/${tenantId}/branches`, 'POST', payload),
   receiveStock: (payload) => apiRequest('/inventory/receipts', 'POST', payload),
   adjustStock: (payload) => apiRequest('/inventory/adjustments', 'POST', payload),
+  teamUsers: ({ search = '', role = '', status = '', page = 0, size = 100 } = {}) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) })
+    if (search) params.set('search', search)
+    if (role) params.set('role', role)
+    if (status) params.set('status', status)
+    return apiFetch(`/team/users?${params.toString()}`)
+  },
+  createTeamInvitation: (payload) => apiRequest('/team/invitations', 'POST', payload),
+  updateTeamUserRole: (userId, role) => apiRequest(`/team/users/${userId}/role`, 'PATCH', { role }),
+  updateTeamUserBranches: (userId, branchIds) => apiRequest(`/team/users/${userId}/branches`, 'PUT', { branchIds }),
+  updateTeamUserStatus: (userId, status) => apiRequest(`/team/users/${userId}/status`, 'PATCH', { status }),
 }
