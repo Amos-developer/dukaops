@@ -70,10 +70,13 @@ async function apiRequest(path, method, payload) {
   if (response.status === 400) throw new Error('Please review the form details and try again.')
   if (response.status === 409) throw new Error('This record already exists. Please use different details.')
   if (!response.ok) throw new Error('Something went wrong while saving your changes.')
-  return response.status === 204 ? null : response.json()
+  const responseBody = await response.text()
+  return responseBody.trim() ? JSON.parse(responseBody) : null
 }
 
 export const api = {
+  settings: (section) => apiFetch(`/settings/${section}`),
+  saveSettings: (section, payload) => apiRequest(`/settings/${section}`, 'PUT', payload),
   currentUser: () => apiFetch('/auth/me'),
   products: () => apiFetch('/products'),
   branches: (tenantId) => apiFetch(`/tenants/${tenantId}/branches`),

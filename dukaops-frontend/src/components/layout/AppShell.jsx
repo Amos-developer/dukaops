@@ -44,7 +44,7 @@ export default function AppShell({ children }) {
         <div className="sidebar-bottom">
           <div className="workspace-label"><span>Manage</span></div>
           <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><Settings size={18} /><span>Settings</span><ChevronRight className="nav-chevron" size={15} /></NavLink>
-          <button className="nav-item"><HelpCircle size={18} /><span>Help center</span></button>
+          <NavLink to="/help" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => setMobileOpen(false)}><HelpCircle size={18} /><span>Help center</span></NavLink>
           <button className="nav-item logout" onClick={logout}><LogOut size={18} /><span>Log out</span></button>
         </div>
         <button className="collapse-btn" onClick={() => setCollapsed((value) => !value)}>{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}<span>{collapsed ? 'Expand' : 'Collapse'}</span></button>
