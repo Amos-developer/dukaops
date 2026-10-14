@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_API_URL=http://localhost:8000/api
+ARG VITE_API_URL=http://localhost:8001/api
 ARG VITE_API_USERNAME=
 ARG VITE_API_PASSWORD=
 ENV VITE_API_URL=${VITE_API_URL}
