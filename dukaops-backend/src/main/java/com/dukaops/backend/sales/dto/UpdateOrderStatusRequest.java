@@ -1,0 +1,1 @@
+package com.dukaops.backend.sales.dto; import jakarta.validation.constraints.NotNull; import com.dukaops.backend.sales.OrderStatus; public record UpdateOrderStatusRequest(@NotNull OrderStatus status) {}
