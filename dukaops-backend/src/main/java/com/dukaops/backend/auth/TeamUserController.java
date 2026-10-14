@@ -5,6 +5,8 @@ import com.dukaops.backend.auth.dto.TeamUserPageResponse;
 import com.dukaops.backend.auth.dto.TeamUserResponse;
 import com.dukaops.backend.auth.dto.UpdateTeamUserRequest;
 import com.dukaops.backend.auth.dto.UpdateTeamUserStatusRequest;
+import com.dukaops.backend.auth.dto.UpdateTeamUserRoleRequest;
+import com.dukaops.backend.auth.dto.UpdateTeamUserBranchesRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -74,5 +76,15 @@ public class TeamUserController {
             @Valid @RequestBody UpdateTeamUserStatusRequest request
     ) {
         return teamUserService.updateStatus(principal, userId, request);
+    }
+
+    @PatchMapping("/{userId}/role")
+    public TeamUserResponse updateRole(@AuthenticationPrincipal TenantUserPrincipal principal, @PathVariable UUID userId, @Valid @RequestBody UpdateTeamUserRoleRequest request) {
+        return teamUserService.updateRole(principal, userId, request);
+    }
+
+    @PutMapping("/{userId}/branches")
+    public TeamUserResponse updateBranches(@AuthenticationPrincipal TenantUserPrincipal principal, @PathVariable UUID userId, @Valid @RequestBody UpdateTeamUserBranchesRequest request) {
+        return teamUserService.updateBranches(principal, userId, request);
     }
 }

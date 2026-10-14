@@ -36,6 +36,7 @@ public class SecurityConfig {
                     HttpMethod.POST,
                     "/api/auth/register"
                 ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/team/invitations/*/accept").permitAll()
                 .requestMatchers(
                     "/actuator/health",
                     "/actuator/health/**"

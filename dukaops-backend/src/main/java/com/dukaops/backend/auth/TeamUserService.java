@@ -6,6 +6,8 @@ import com.dukaops.backend.auth.dto.TeamUserPageResponse;
 import com.dukaops.backend.auth.dto.TeamUserResponse;
 import com.dukaops.backend.auth.dto.UpdateTeamUserRequest;
 import com.dukaops.backend.auth.dto.UpdateTeamUserStatusRequest;
+import com.dukaops.backend.auth.dto.UpdateTeamUserRoleRequest;
+import com.dukaops.backend.auth.dto.UpdateTeamUserBranchesRequest;
 import com.dukaops.backend.branch.Branch;
 import com.dukaops.backend.branch.BranchRepository;
 import com.dukaops.backend.tenant.Tenant;
@@ -172,6 +174,27 @@ public class TeamUserService {
         }
 
         user.updateStatus(request.status());
+        return toResponse(tenantUserRepository.save(user));
+    }
+
+    @Transactional
+    public TeamUserResponse updateRole(TenantUserPrincipal actor, UUID userId, UpdateTeamUserRoleRequest request) {
+        requireUserAdmin(actor);
+        TenantUser user = findTenantUser(actor.getTenantId(), userId);
+        preventOwnerMutation(user);
+        preventSelfPrivilegeChange(actor, user, request.role());
+        requireAssignableRole(actor, request.role());
+        user.updateProfile(user.getFullName(), request.role());
+        user.replaceBranchAssignments(buildAssignments(user.getTenant(), user, request.role(), user.getBranchAssignments().stream().map(a -> a.getBranch().getId()).collect(java.util.stream.Collectors.toSet())));
+        return toResponse(tenantUserRepository.save(user));
+    }
+
+    @Transactional
+    public TeamUserResponse updateBranches(TenantUserPrincipal actor, UUID userId, UpdateTeamUserBranchesRequest request) {
+        requireUserAdmin(actor);
+        TenantUser user = findTenantUser(actor.getTenantId(), userId);
+        preventOwnerMutation(user);
+        user.replaceBranchAssignments(buildAssignments(user.getTenant(), user, user.getRole(), request.branchIds()));
         return toResponse(tenantUserRepository.save(user));
     }
 
