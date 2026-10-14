@@ -105,4 +105,6 @@ export const api = {
   createContact: (type, payload) => apiRequest(`/contacts/${type}`, 'POST', payload),
   updateContact: (type, id, payload) => apiRequest(`/contacts/${type}/${id}`, 'PUT', payload),
   updateContactStatus: (type, id, status) => apiRequest(`/contacts/${type}/${id}/status?status=${status}`, 'PATCH'),
+  report: (type, params = {}) => { const query = new URLSearchParams(); Object.entries(params).forEach(([key, value]) => { if (value) query.set(key, value) }); return apiFetch(`/reports/${type}${query.toString() ? `?${query}` : ''}`) },
+  exportReport: (type = 'sales', branchId) => apiFetch(`/reports/export?type=${encodeURIComponent(type)}${branchId ? `&branchId=${branchId}` : ''}`),
 }

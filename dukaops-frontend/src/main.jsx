@@ -25,6 +25,7 @@ import './styles/sales-page.css'
 import './styles/theme.css'
 import './styles/feedback.css'
 import './styles/contacts-page.css'
+import './styles/reports-page.css'
 import App from './App'
 import { FeedbackProvider } from './components/ui/FeedbackProvider'
 
