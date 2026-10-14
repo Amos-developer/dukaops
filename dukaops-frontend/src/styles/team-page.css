@@ -14,3 +14,15 @@
 .team-invitations td:first-child strong, .team-invitations td:first-child small { display: block; }
 .team-invitations td:first-child small { margin-top: 3px; color: #7890a1; font-size: 9px; }
 .team-invitations .team-table { margin-bottom: 0; }
+.team-access-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.team-members-panel { min-width: 0; border: 1px solid #dce8ef; border-radius: 10px; background: #fff; overflow: hidden; }
+.team-members-panel .team-toolbar { align-items: stretch; flex-direction: column; padding: 14px; margin: 0; gap: 12px; }
+.team-members-panel .team-table-card { border: 0; border-radius: 0; }
+.team-access-grid .team-invitations { margin-top: 0; min-width: 0; border-radius: 10px; }
+.team-panel-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px; border-bottom: 1px solid #edf3f6; }
+.team-panel-filters input, .team-panel-filters select { min-height: 32px; padding: 6px 8px; font-size: 10px; color: #46677f; border: 1px solid #dce8ef; border-radius: 6px; background: #fff; }
+.team-panel-filters input, .team-members-panel .team-filters input { flex: 1 1 150px; min-width: 0; }
+.team-panel-filters input:focus, .team-panel-filters select:focus, .team-filters input:focus, .team-filters select:focus { outline: 2px solid #d9f5f1; border-color: #00a69c; }
+.team-access-grid .team-table { min-width: 550px; margin: 0; }
+.team-access-grid .team-invitations .team-table { min-width: 390px; }
+@media (min-width: 1200px) { .team-access-grid { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); } .team-access-grid:has(> .team-members-panel:only-child) { grid-template-columns: minmax(0, 1fr); } }
