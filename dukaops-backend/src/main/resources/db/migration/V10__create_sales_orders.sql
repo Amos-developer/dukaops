@@ -10,6 +10,7 @@ CREATE TABLE sales_orders (
     idempotency_key VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_sales_orders_tenant_id UNIQUE (tenant_id, id),
     CONSTRAINT uq_sales_order_idempotency UNIQUE (tenant_id, idempotency_key),
     CONSTRAINT fk_sales_orders_branch FOREIGN KEY (tenant_id, branch_id) REFERENCES branches (tenant_id, id),
     CONSTRAINT fk_sales_orders_user FOREIGN KEY (tenant_id, created_by) REFERENCES tenant_users (tenant_id, id)

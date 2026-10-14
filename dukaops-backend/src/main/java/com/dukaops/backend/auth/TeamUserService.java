@@ -139,6 +139,13 @@ public class TeamUserService {
         requireUserAdmin(actor);
 
         TenantUser user = findTenantUser(actor.getTenantId(), userId);
+        if (actor.getUserId().equals(userId)
+                && request.role() != actor.getRole()) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You cannot change your own role."
+            );
+        }
         preventOwnerMutation(user);
         preventSelfPrivilegeChange(actor, user, request.role());
         requireAssignableRole(actor, request.role());
