@@ -81,6 +81,7 @@ export const api = {
   settings: (section) => apiFetch(`/settings/${section}`),
   saveSettings: (section, payload) => apiRequest(`/settings/${section}`, 'PUT', payload),
   currentUser: () => apiFetch('/auth/me'),
+  createTeamUser: (payload) => apiRequest('/team/users', 'POST', payload),
   teamInvitations: () => apiFetch('/team/invitations'),
   products: () => apiFetch('/products'),
   branches: (tenantId) => apiFetch(`/tenants/${tenantId}/branches`),
