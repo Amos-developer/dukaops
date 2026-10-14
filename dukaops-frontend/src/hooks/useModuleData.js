@@ -5,4 +5,4 @@ export const useProducts = () => useQuery({ queryKey: ['products'], queryFn: get
 export const useInventory = () => useQuery({ queryKey: ['inventory'], queryFn: getInventoryPageData })
 export const useBranches = () => useQuery({ queryKey: ['branches'], queryFn: getBranchesPageData })
 export const useStockMovements = () => useQuery({ queryKey: ['stock-movements'], queryFn: getStockMovementsPageData })
-export const useTeam = () => useQuery({ queryKey: ['team'], queryFn: getTeamPageData })
+export const useTeam = () => useQuery({ queryKey: ['team'], queryFn: getTeamPageData, refetchOnMount: 'always' })
