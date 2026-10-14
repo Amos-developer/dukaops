@@ -97,7 +97,7 @@ export const api = {
   updateTeamUserBranches: (userId, branchIds) => apiRequest(`/team/users/${userId}/branches`, 'PUT', { branchIds }),
   updateTeamUserStatus: (userId, status) => apiRequest(`/team/users/${userId}/status`, 'PATCH', { status }),
   salesSummary: () => apiFetch('/sales/summary'),
-  salesOrders: ({ search = '', status = '', page = 0, size = 20 } = {}) => apiFetch(`/sales/orders?${new URLSearchParams({ search, status, page, size })}`),
+  salesOrders: ({ search = '', status = '', page = 0, size = 20 } = {}) => { const params = new URLSearchParams({ page: String(page), size: String(size) }); if (search) params.set('search', search); if (status) params.set('status', status); return apiFetch(`/sales/orders?${params.toString()}`) },
   salesOrder: (id) => apiFetch(`/sales/orders/${id}`),
   checkout: (payload) => apiRequest('/sales/checkout', 'POST', payload),
   updateOrderStatus: (id, status) => apiRequest(`/sales/orders/${id}/status`, 'PATCH', { status }),
