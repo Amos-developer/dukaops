@@ -2,7 +2,10 @@ package com.dukaops.backend.auth;
 import com.dukaops.backend.tenant.Tenant;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity 
@@ -39,6 +42,15 @@ public class TenantUser {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @BatchSize(size = 50)
+    private Set<TenantUserBranchAssignment> branchAssignments =
+            new LinkedHashSet<>();
 
     protected TenantUser() {
     }
@@ -101,6 +113,25 @@ public class TenantUser {
 
     public UserStatus getStatus() {
         return status;
+    }
+
+    public void updateProfile(String fullName, UserRole role) {
+        this.fullName = fullName;
+        this.role = role;
+    }
+
+    public void updateStatus(UserStatus status) {
+        this.status = status;
+    }
+
+    public Set<TenantUserBranchAssignment> getBranchAssignments() {
+        return branchAssignments;
+    }
+
+    public void replaceBranchAssignments(
+            Set<TenantUserBranchAssignment> branchAssignments) {
+        this.branchAssignments.clear();
+        this.branchAssignments.addAll(branchAssignments);
     }
 
     public Instant getCreatedAt() {

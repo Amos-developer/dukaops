@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.dukaops.backend.auth.TenantUser;
+import com.dukaops.backend.auth.TenantUserBranchAssignmentRepository;
 import com.dukaops.backend.auth.TenantUserRepository;
+import com.dukaops.backend.auth.UserRole;
 import com.dukaops.backend.branch.Branch;
 import com.dukaops.backend.branch.BranchRepository;
 import com.dukaops.backend.branch.inventory.StockLevel;
@@ -27,6 +29,7 @@ public class InventoryService {
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
     private final TenantUserRepository tenantUserRepository;
+    private final TenantUserBranchAssignmentRepository branchAssignmentRepository;
     private final StockLevelRepository stockLevelRepository;
     private final StockMovementRepository stockMovementRepository;
 
@@ -34,12 +37,14 @@ public class InventoryService {
             BranchRepository branchRepository,
             ProductRepository productRepository,
             TenantUserRepository tenantUserRepository,
+            TenantUserBranchAssignmentRepository branchAssignmentRepository,
             StockLevelRepository stockLevelRepository,
             StockMovementRepository stockMovementRepository
     ) {
         this.branchRepository = branchRepository;
         this.productRepository = productRepository;
         this.tenantUserRepository = tenantUserRepository;
+        this.branchAssignmentRepository = branchAssignmentRepository;
         this.stockLevelRepository = stockLevelRepository;
         this.stockMovementRepository = stockMovementRepository;
     }
@@ -48,6 +53,7 @@ public class InventoryService {
     public StockResponse receiveStock(
             UUID tenantId,
             UUID userId,
+            UserRole userRole,
             ReceiveStockRequest request
     ) {
         if (request.quantity() == null
@@ -58,6 +64,7 @@ public class InventoryService {
         return changeStock(
                 tenantId,
                 userId,
+                userRole,
                 request.branchId(),
                 request.productId(),
                 request.quantity(),
@@ -72,6 +79,7 @@ public class InventoryService {
     public StockResponse adjustStock(
             UUID tenantId,
             UUID userId,
+            UserRole userRole,
             AdjustStockRequest request
     ) {
         if (request.quantityChange() == null
@@ -82,6 +90,7 @@ public class InventoryService {
         return changeStock(
                 tenantId,
                 userId,
+                userRole,
                 request.branchId(),
                 request.productId(),
                 request.quantityChange(),
@@ -95,6 +104,7 @@ public class InventoryService {
     private StockResponse changeStock(
             UUID tenantId,
             UUID userId,
+            UserRole userRole,
             UUID branchId,
             UUID productId,
             BigDecimal delta,
@@ -107,6 +117,7 @@ public class InventoryService {
         Branch branch = branchRepository
                 .findTenantScopedBranchByIdForUpdate(branchId, tenantId)
                 .orElseThrow(() -> notFound("Branch not found for this business."));
+        requireBranchAccess(tenantId, userId, userRole, branchId);
 
         Product product = productRepository
                 .findTenantScopedProductById(productId, tenantId)
@@ -178,10 +189,13 @@ public class InventoryService {
     @Transactional(readOnly = true)
     public List<StockResponse> getBranchStock(
             UUID tenantId,
+            UUID userId,
+            UserRole userRole,
             UUID branchId
     ) {
         branchRepository.findTenantScopedBranchById(branchId, tenantId)
                 .orElseThrow(() -> notFound("Branch not found for this business."));
+        requireBranchAccess(tenantId, userId, userRole, branchId);
 
         return stockLevelRepository
                 .findStockLevelsForBranch(tenantId, branchId)
@@ -193,11 +207,14 @@ public class InventoryService {
     @Transactional(readOnly = true)
     public List<StockMovementResponse> getMovementHistory(
             UUID tenantId,
+            UUID userId,
+            UserRole userRole,
             UUID branchId,
             UUID productId
     ) {
         branchRepository.findTenantScopedBranchById(branchId, tenantId)
                 .orElseThrow(() -> notFound("Branch not found for this business."));
+        requireBranchAccess(tenantId, userId, userRole, branchId);
 
         productRepository.findTenantScopedProductById(productId, tenantId)
                 .orElseThrow(() -> notFound("Product not found for this business."));
@@ -227,10 +244,13 @@ public class InventoryService {
     @Transactional(readOnly = true)
     public List<StockMovementResponse> getBranchMovementHistory(
             UUID tenantId,
+            UUID userId,
+            UserRole userRole,
             UUID branchId
     ) {
         branchRepository.findTenantScopedBranchById(branchId, tenantId)
                 .orElseThrow(() -> notFound("Branch not found for this business."));
+        requireBranchAccess(tenantId, userId, userRole, branchId);
 
         return stockMovementRepository
                 .findBranchMovementHistory(tenantId, branchId)
@@ -284,5 +304,30 @@ public class InventoryService {
 
     private ResponseStatusException badRequest(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+    }
+
+    private void requireBranchAccess(
+            UUID tenantId,
+            UUID userId,
+            UserRole userRole,
+            UUID branchId
+    ) {
+        if (userRole == UserRole.OWNER || userRole == UserRole.ADMIN) {
+            return;
+        }
+
+        boolean allowed =
+                branchAssignmentRepository.existsByTenant_IdAndUser_IdAndBranch_Id(
+                        tenantId,
+                        userId,
+                        branchId
+                );
+
+        if (!allowed) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You do not have access to this branch."
+            );
+        }
     }
 }

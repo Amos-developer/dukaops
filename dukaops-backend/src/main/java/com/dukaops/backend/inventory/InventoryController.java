@@ -33,6 +33,7 @@ public class InventoryController {
         return inventoryService.receiveStock(
                 principal.getTenantId(),
                 principal.getUserId(),
+                principal.getRole(),
                 request
         );
     }
@@ -45,6 +46,7 @@ public class InventoryController {
         return inventoryService.adjustStock(
                 principal.getTenantId(),
                 principal.getUserId(),
+                principal.getRole(),
                 request
         );
     }
@@ -56,6 +58,8 @@ public class InventoryController {
     ) {
         return inventoryService.getBranchStock(
                 principal.getTenantId(),
+                principal.getUserId(),
+                principal.getRole(),
                 branchId
         );
     }
@@ -68,6 +72,8 @@ public class InventoryController {
     ) {
         return inventoryService.getMovementHistory(
                 principal.getTenantId(),
+                principal.getUserId(),
+                principal.getRole(),
                 branchId,
                 productId
         );
@@ -80,6 +86,8 @@ public class InventoryController {
     ) {
         return inventoryService.getBranchMovementHistory(
                 principal.getTenantId(),
+                principal.getUserId(),
+                principal.getRole(),
                 branchId
         );
     }
