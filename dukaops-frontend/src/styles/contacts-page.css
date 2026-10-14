@@ -1,0 +1,26 @@
+.contacts-page { min-width: 0; }
+.contacts-heading { align-items: flex-start; }
+.contacts-heading h1 { margin-bottom: .25rem; }
+.contacts-heading p { color: #68819b; font-size: .78rem; margin: 0; }
+.contacts-primary { background: #08a89d; border-color: #08a89d; color: #fff; }
+.contacts-primary:hover, .contacts-primary:focus { background: #078f86; border-color: #078f86; color: #fff; }
+.contacts-tabs { border-bottom: 1px solid #dce8ef; gap: .35rem; }
+.contacts-tabs .nav-link { border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: #607992; font-size: .78rem; font-weight: 700; padding: .7rem .9rem; }
+.contacts-tabs .nav-link.active { background: transparent; border-bottom-color: #08a89d; color: #0d2946; }
+.contacts-metrics { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.contacts-metric { background: #fff; border: 1px solid #e1ebf0; border-radius: 12px; box-shadow: 0 4px 14px rgba(19, 53, 82, .04); padding: .85rem; }
+.contacts-metric-label { color: #7890a5; font-size: .68rem; font-weight: 700; text-transform: uppercase; }
+.contacts-metric-value { color: #102e4b; font-size: 1.35rem; font-weight: 800; margin-top: .25rem; }
+.contacts-toolbar { align-items: center; display: flex; flex-wrap: wrap; gap: .6rem; justify-content: space-between; }
+.contacts-toolbar .form-control, .contacts-toolbar .form-select { font-size: .78rem; min-height: 38px; }
+.contacts-actions { display: flex; gap: .35rem; }
+.contact-inline { align-items: center; display: flex; gap: .35rem; }
+.contact-inline small { color: #7890a5; display: block; }
+.contacts-table td, .contacts-table th { font-size: .76rem; vertical-align: middle; }
+@media (min-width: 768px) {
+  .contacts-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .contacts-toolbar .search-control { max-width: 340px; }
+}
+@media (min-width: 1100px) {
+  .contacts-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

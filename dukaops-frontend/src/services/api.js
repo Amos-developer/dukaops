@@ -101,4 +101,8 @@ export const api = {
   salesOrder: (id) => apiFetch(`/sales/orders/${id}`),
   checkout: (payload) => apiRequest('/sales/checkout', 'POST', payload),
   updateOrderStatus: (id, status) => apiRequest(`/sales/orders/${id}/status`, 'PATCH', { status }),
+  contacts: (type, { search = '', status = '', page = 0, size = 50 } = {}) => { const params = new URLSearchParams({ page: String(page), size: String(size) }); if (search) params.set('search', search); if (status) params.set('status', status); return apiFetch(`/contacts/${type}?${params.toString()}`) },
+  createContact: (type, payload) => apiRequest(`/contacts/${type}`, 'POST', payload),
+  updateContact: (type, id, payload) => apiRequest(`/contacts/${type}/${id}`, 'PUT', payload),
+  updateContactStatus: (type, id, status) => apiRequest(`/contacts/${type}/${id}/status?status=${status}`, 'PATCH'),
 }
