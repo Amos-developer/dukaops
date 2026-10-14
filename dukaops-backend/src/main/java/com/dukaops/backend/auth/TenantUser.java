@@ -120,6 +120,9 @@ public class TenantUser {
         this.role = role;
     }
 
+    public void updateFullName(String fullName) { this.fullName = fullName; }
+    public void changePassword(String passwordHash) { this.passwordHash = passwordHash; }
+
     public void updateStatus(UserStatus status) {
         this.status = status;
     }
