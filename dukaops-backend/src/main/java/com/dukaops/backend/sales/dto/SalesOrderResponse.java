@@ -1,0 +1,1 @@
+package com.dukaops.backend.sales.dto; import java.math.BigDecimal; import java.time.Instant; import java.util.UUID; import com.dukaops.backend.sales.OrderStatus; public record SalesOrderResponse(UUID id,UUID branchId,String customerName,OrderStatus status,BigDecimal totalAmount,Instant createdAt) {}

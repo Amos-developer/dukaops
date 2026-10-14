@@ -1,0 +1,1 @@
+package com.dukaops.backend.sales.dto; import java.math.BigDecimal; import java.util.UUID; import jakarta.validation.constraints.*; public record CheckoutItemRequest(@NotNull UUID productId,@NotNull @DecimalMin("0.001") BigDecimal quantity) {}

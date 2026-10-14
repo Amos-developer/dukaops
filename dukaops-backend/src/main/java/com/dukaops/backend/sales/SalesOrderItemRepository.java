@@ -1,0 +1,1 @@
+package com.dukaops.backend.sales; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem,UUID>{ List<SalesOrderItem> findAllByTenant_IdAndOrder_Id(UUID tenantId,UUID orderId); }

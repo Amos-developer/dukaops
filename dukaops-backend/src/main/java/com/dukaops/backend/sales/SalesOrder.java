@@ -1,0 +1,11 @@
+package com.dukaops.backend.sales;
+import java.math.BigDecimal; import java.time.Instant; import java.util.UUID;
+import com.dukaops.backend.auth.TenantUser; import com.dukaops.backend.branch.Branch; import com.dukaops.backend.tenant.Tenant; import jakarta.persistence.*;
+@Entity @Table(name="sales_orders", uniqueConstraints=@UniqueConstraint(name="uq_sales_order_idempotency", columnNames={"tenant_id","idempotency_key"}))
+public class SalesOrder {
+ @Id private UUID id; @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="tenant_id") private Tenant tenant; @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="branch_id") private Branch branch; @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="created_by") private TenantUser createdBy;
+ @Column(name="customer_name") private String customerName; @Column(name="customer_phone") private String customerPhone; @Enumerated(EnumType.STRING) @Column(nullable=false) private OrderStatus status; @Column(nullable=false,precision=14,scale=2) private BigDecimal totalAmount; @Column(name="idempotency_key",nullable=false) private String idempotencyKey; @Column(name="created_at",nullable=false,updatable=false) private Instant createdAt; @Column(name="updated_at",nullable=false) private Instant updatedAt;
+ protected SalesOrder() {} public SalesOrder(Tenant t,Branch b,TenantUser u,String name,String phone,OrderStatus s,BigDecimal total,String key){id=UUID.randomUUID();tenant=t;branch=b;createdBy=u;customerName=name;customerPhone=phone;status=s;totalAmount=total;idempotencyKey=key;}
+ @PrePersist void create(){if(createdAt==null)createdAt=Instant.now();updatedAt=createdAt;} @PreUpdate void update(){updatedAt=Instant.now();}
+ public UUID getId(){return id;} public Tenant getTenant(){return tenant;} public Branch getBranch(){return branch;} public TenantUser getCreatedBy(){return createdBy;} public String getCustomerName(){return customerName;} public String getCustomerPhone(){return customerPhone;} public OrderStatus getStatus(){return status;} public BigDecimal getTotalAmount(){return totalAmount;} public String getIdempotencyKey(){return idempotencyKey;} public Instant getCreatedAt(){return createdAt;} public void setStatus(OrderStatus s){status=s;}
+}
