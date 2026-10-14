@@ -1,0 +1,1 @@
+package com.dukaops.backend.contact.dto; import jakarta.validation.constraints.*; public record SupplierRequest(@NotBlank @Size(max=150) String businessName,@Size(max=150) String contactPerson,@Size(max=40) String phone,@Email @Size(max=254) String email,String address,String notes){}

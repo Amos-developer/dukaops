@@ -1,0 +1,1 @@
+package com.dukaops.backend.contact.dto; import java.time.Instant; import java.util.UUID; import com.dukaops.backend.contact.ContactStatus; public record ContactResponse(UUID id,String name,String businessName,String contactPerson,String phone,String email,String address,String notes,ContactStatus status,Instant createdAt,Instant updatedAt){}
