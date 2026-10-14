@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Building2, MoreHorizontal, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { api } from '../services/api'
-import { useTeam } from '../hooks/useModuleData'
+import { useBranches, useTeam } from '../hooks/useModuleData'
 import StatusBadge from '../components/ui/StatusBadge'
 import CrudModal from '../components/ui/CrudModal'
 import { useFeedback } from '../components/ui/FeedbackProvider'
@@ -10,10 +10,10 @@ import { useFeedback } from '../components/ui/FeedbackProvider'
 const roles = ['ADMIN', 'MANAGER', 'STAFF']
 
 export default function TeamPage() {
-  const { data, isLoading, isError } = useTeam(); const feedback = useFeedback(); const queryClient = useQueryClient()
+  const { data, isLoading, isError } = useTeam(); const { data: branchData } = useBranches(); const feedback = useFeedback(); const queryClient = useQueryClient()
   const [inviteOpen, setInviteOpen] = useState(false); const [branchesUser, setBranchesUser] = useState(null); const [inviteToken, setInviteToken] = useState(''); const [busy, setBusy] = useState(false)
   const [search, setSearch] = useState(''); const [roleFilter, setRoleFilter] = useState('ALL'); const [statusFilter, setStatusFilter] = useState('ALL')
-  const user = data?.user; const branches = data?.branches || []
+  const user = data?.user; const branches = data?.branches?.length ? data.branches : (branchData?.branches || [])
   const users = useMemo(() => (data?.users || []).filter((member) => { const text = `${member.fullName || ''} ${member.email || ''}`.toLowerCase(); return (!search || text.includes(search.toLowerCase())) && (roleFilter === 'ALL' || member.role === roleFilter) && (statusFilter === 'ALL' || member.status === statusFilter) }), [data?.users, search, roleFilter, statusFilter])
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['team'] })
   const action = async (work, success) => { setBusy(true); try { await work(); feedback.success(success); refresh() } catch (error) { feedback.error(error.message) } finally { setBusy(false) } }

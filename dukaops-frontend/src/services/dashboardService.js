@@ -60,7 +60,11 @@ export async function getStockMovementsPageData() {
 
 export async function getTeamPageData() {
   const user = await api.currentUser()
-  const [branches, team] = await Promise.all([api.branches(user.tenantId), api.teamUsers()])
+  const [branchResult, teamResult] = await Promise.allSettled([api.branches(user.tenantId), api.teamUsers()])
+  if (teamResult.status === 'rejected') throw teamResult.reason
+  const rawBranches = branchResult.status === 'fulfilled' ? branchResult.value : []
+  const branches = Array.isArray(rawBranches) ? rawBranches : (rawBranches?.content || rawBranches?.branches || [])
+  const team = teamResult.value
   const users = Array.isArray(team) ? team : (team?.content || team?.users || [])
   return { user, branches, team, users, isDemo: false }
 }
