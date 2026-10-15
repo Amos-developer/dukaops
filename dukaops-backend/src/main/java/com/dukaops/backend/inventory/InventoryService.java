@@ -25,6 +25,7 @@ import com.dukaops.backend.product.ProductRepository;
 
 @Service
 public class InventoryService {
+    @org.springframework.beans.factory.annotation.Autowired private com.dukaops.backend.audit.SecurityAuditService audit;
 
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
@@ -166,6 +167,7 @@ public class InventoryService {
             throw badRequest("Insufficient stock. Quantity cannot become negative.");
         }
 
+        String previousQuantity = stock.getQuantity().toPlainString();
         stock.applyQuantityChange(delta);
 
         StockLevel savedStock = stockLevelRepository.save(stock);
@@ -183,6 +185,10 @@ public class InventoryService {
         );
 
         stockMovementRepository.save(movement);
+
+        if (movementType == StockMovementType.ADJUSTMENT)
+            audit.record(tenantId, branchId, "STOCK_ADJUSTED", productId, previousQuantity,
+                    savedStock.getQuantity().toPlainString(), notes);
 
         return toStockResponse(savedStock);
     }

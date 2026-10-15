@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @Transactional
 public class ProductService {
+    @org.springframework.beans.factory.annotation.Autowired private com.dukaops.backend.audit.SecurityAuditService audit;
     @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
     public void delete(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID productId) {
@@ -98,6 +99,8 @@ public class ProductService {
             UUID productId,
             ProductRequest request) {
 
+        audit.requireBusinessAdmin(tenantId);
+
         Product product = findProduct(tenantId, productId);
         String sku = normalizeSku(request.sku());
 
@@ -109,6 +112,9 @@ public class ProductService {
                 "A product with this SKU already exists");
         }
 
+        String previousCost = product.getCostPrice() == null ? null : product.getCostPrice().toPlainString();
+        boolean costChanged = product.getCostPrice() == null ? request.costPrice() != null
+                : request.costPrice() == null || product.getCostPrice().compareTo(request.costPrice()) != 0;
         product.updateDetails(
             sku,
             request.name().trim(),
@@ -116,6 +122,9 @@ public class ProductService {
             request.unitPrice(),
             request.costPrice()
         );
+
+        if (costChanged) audit.record(tenantId, null, "PRODUCT_COST_CHANGED", productId,
+                previousCost, request.costPrice() == null ? null : request.costPrice().toPlainString(), null);
 
         return ProductResponse.from(productRepository.save(product));
     }
