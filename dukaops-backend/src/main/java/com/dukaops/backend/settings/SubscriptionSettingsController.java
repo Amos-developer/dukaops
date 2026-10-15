@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SubscriptionSettingsController {
     @GetMapping("/api/settings/subscription")
-    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    @PreAuthorize("hasRole('OWNER')")
     public SubscriptionSettingsResponse get() {
         return new SubscriptionSettingsResponse(false, "Subscription information is not available yet.");
     }

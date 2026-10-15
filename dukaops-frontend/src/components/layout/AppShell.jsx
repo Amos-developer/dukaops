@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { useIsFetching } from '@tanstack/react-query'
-import { clearCredentials } from '../../services/api'
+import { useIsFetching, useQuery } from '@tanstack/react-query'
+import { api, clearCredentials } from '../../services/api'
+import { canVisit } from '../../services/permissions'
 import { Bell, Boxes, Building2, ChevronDown, ChevronRight, FileBarChart2, HelpCircle, LayoutDashboard, LogOut, Menu, Package, PanelLeftClose, PanelLeftOpen, Search, Settings, ShoppingCart, Store, Users, X } from 'lucide-react'
 
 const navGroups = [
@@ -27,10 +28,11 @@ const navGroups = [
 ]
 
 export default function AppShell({ children }) {
+  const session = useQuery({ queryKey: ['session'], queryFn: api.currentUser })
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const isFetching = useIsFetching() > 0
-  const logout = () => { clearCredentials(); window.location.href = '/auth' }
+  const logout = () => { clearCredentials(); window.location.href = '/login' }
   return (
     <div className="app-shell">
       <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-mobile-open' : ''}`}>
@@ -38,7 +40,7 @@ export default function AppShell({ children }) {
         <nav className="main-nav">
           {navGroups.map((group) => <div className="nav-group" key={group.label}>
             <div className="workspace-label"><span>{group.label}</span>{group.label !== 'Overview' && <small>{group.label === 'MVP' ? 'CORE' : 'SOON'}</small>}</div>
-            {group.items.map(({ label, path, icon: Icon }) => <NavLink to={path} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} key={label} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span>{group.label !== 'Overview' && <ChevronRight className="nav-chevron" size={15} />}</NavLink>)}
+            {group.items.filter(item => canVisit(session.data?.role, item.path)).map(({ label, path, icon: Icon }) => <NavLink to={path} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} key={label} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span>{group.label !== 'Overview' && <ChevronRight className="nav-chevron" size={15} />}</NavLink>)}
           </div>)}
         </nav>
         <div className="sidebar-bottom">
@@ -57,7 +59,7 @@ export default function AppShell({ children }) {
           <div className="business-context"><div className="business-logo">D</div><div><strong>DukaOps Demo</strong><span>Business workspace</span></div></div>
           <div className="branch-selector"><Building2 size={15} /><span>Main branch</span><ChevronDown size={14} /></div>
           <div className="search-box"><Search size={17} /><input placeholder="Search products, reports..." aria-label="Search" /></div>
-          <div className="topbar-actions"><button className="icon-btn"><Bell size={19} /><span className="notification-dot" /></button><div className="profile"><div className="avatar">AM</div><div className="profile-copy"><strong>Amos M.</strong><small>Administrator</small></div><ChevronDown size={15} /></div><button className="logout-top" onClick={logout}><LogOut size={15} /><span>Log out</span></button></div>
+          <div className="topbar-actions"><button className="icon-btn"><Bell size={19} /><span className="notification-dot" /></button><div className="profile"><div className="avatar">{session.data?.email?.slice(0, 2).toUpperCase() || 'U'}</div><div className="profile-copy"><strong>{session.data?.email || 'Account'}</strong><small>{session.data?.role || ''}</small></div><ChevronDown size={15} /></div><button className="logout-top" onClick={logout}><LogOut size={15} /><span>Log out</span></button></div>
         </header>
         <div className="page-content">{children || <Outlet />}</div>
       </main>

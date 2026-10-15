@@ -43,6 +43,15 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/actuator/health/**"
                 ).permitAll()
+                .requestMatchers("/api/settings/subscription", "/api/billing/**").hasRole("OWNER")
+                .requestMatchers("/api/tenants", "/api/tenants/").denyAll()
+                .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("OWNER")
+                .requestMatchers("/api/products/**", "/api/team/**", "/api/contacts/**").hasAnyRole("OWNER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/inventory/branches/*/movements", "/api/inventory/branches/*/stock/*/movements").hasAnyRole("OWNER", "ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/inventory/**").authenticated()
+                .requestMatchers("/api/inventory/**").hasAnyRole("OWNER", "ADMIN", "MANAGER")
+                .requestMatchers("/api/reports/**").hasAnyRole("OWNER", "ADMIN", "MANAGER")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             )

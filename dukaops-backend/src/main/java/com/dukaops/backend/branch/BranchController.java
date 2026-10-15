@@ -16,6 +16,7 @@ import java.util.UUID;
 public class BranchController {
 
     private final BranchService branchService;
+    @org.springframework.beans.factory.annotation.Autowired private com.dukaops.backend.auth.AccessPolicy accessPolicy;
 
     public BranchController(BranchService branchService) {
         this.branchService = branchService;
@@ -27,7 +28,7 @@ public class BranchController {
             @PathVariable UUID tenantId,
             @Valid @RequestBody CreateBranchRequest request) {
         checkTenant(tenantId);
-        if (principal().getRole() != com.dukaops.backend.auth.UserRole.OWNER)
+        if (principal().getRole() != com.dukaops.backend.auth.UserRole.OWNER && principal().getRole() != com.dukaops.backend.auth.UserRole.ADMIN)
             throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "Only the business owner can create branches.");
         return branchService.create(tenantId, request);
     }
@@ -44,6 +45,7 @@ public class BranchController {
             @PathVariable UUID tenantId,
             @PathVariable UUID branchId) {
         checkTenant(tenantId);
+        accessPolicy.requireBranch(principal(), branchId);
         return branchService.findById(tenantId, branchId);
     }
     @PutMapping("/{branchId}")

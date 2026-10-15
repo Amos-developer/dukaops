@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @Service
 public class BranchService {
+    @org.springframework.beans.factory.annotation.Autowired private com.dukaops.backend.auth.AccessPolicy accessPolicy;
     @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
     @Transactional(readOnly = true)
@@ -122,7 +123,7 @@ public class BranchService {
     @Transactional
     public BranchResponse update(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID branchId,
             com.dukaops.backend.branch.dto.UpdateBranchRequest request) {
-        requireOwner(actor);
+        requireOperator(actor, branchId);
         var branch = branchRepository.findTenantScopedBranchByIdForUpdate(branchId, actor.getTenantId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found."));
         String code = request.code().trim().toUpperCase(Locale.ROOT);
@@ -134,7 +135,7 @@ public class BranchService {
 
     @Transactional
     public BranchResponse status(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID branchId, BranchStatus status) {
-        requireOwner(actor);
+        requireOperator(actor, branchId);
         var branch = branchRepository.findTenantScopedBranchByIdForUpdate(branchId, actor.getTenantId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found."));
         var tenant = tenantRepository.findById(actor.getTenantId()).orElseThrow();
@@ -145,9 +146,10 @@ public class BranchService {
         return toResponse(branch);
     }
 
-    private void requireOwner(com.dukaops.backend.auth.TenantUserPrincipal actor) {
-        if (actor.getRole() != com.dukaops.backend.auth.UserRole.OWNER)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the business owner can manage branches.");
+    private void requireOperator(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID branchId) {
+        if (actor.getRole() == com.dukaops.backend.auth.UserRole.STAFF)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot manage branches.");
+        accessPolicy.requireBranch(actor, branchId);
     }
 
     private BranchResponse toResponse(Branch branch) {

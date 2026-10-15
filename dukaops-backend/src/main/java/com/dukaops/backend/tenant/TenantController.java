@@ -35,6 +35,8 @@ public class TenantController {
 
     @GetMapping("/{id}")
     public TenantResponse findById(@PathVariable UUID id) {
+        var actor = (com.dukaops.backend.auth.TenantUserPrincipal) org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!actor.getTenantId().equals(id)) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found.");
         return tenantService.findById(id);
     }
     

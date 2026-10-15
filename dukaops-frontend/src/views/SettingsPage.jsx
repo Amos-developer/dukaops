@@ -9,7 +9,8 @@ const sections = [ ['business', 'Business Profile', Building2], ['profile', 'My 
 
 export default function SettingsPage() {
   const [section, setSection] = useState('business')
-  return <section className="settings-page"><header><h1>Settings</h1><p>Manage your business, account and system preferences.</p></header><div className="settings-layout"><nav aria-label="Settings sections">{sections.map(([key, label, Icon]) => <button key={key} className={section === key ? 'active' : ''} onClick={() => setSection(key)}><Icon size={16}/>{label}</button>)}</nav><SettingsPanel key={section} section={section}/></div></section>
+  const session = useQuery({ queryKey: ['session'], queryFn: api.currentUser })
+  return <section className="settings-page"><header><h1>Settings</h1><p>Manage your business, account and system preferences.</p></header><div className="settings-layout"><nav aria-label="Settings sections">{sections.filter(([key]) => key !== 'subscription' || session.data?.role === 'OWNER').map(([key, label, Icon]) => <button key={key} className={section === key ? 'active' : ''} onClick={() => setSection(key)}><Icon size={16}/>{label}</button>)}</nav><SettingsPanel key={section} section={section}/></div></section>
 }
 
 function SettingsPanel({ section }) {

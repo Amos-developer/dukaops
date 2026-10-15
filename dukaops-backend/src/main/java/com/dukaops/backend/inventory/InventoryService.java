@@ -113,6 +113,7 @@ public class InventoryService {
             String reference,
             String notes
     ) {
+        if (userRole == UserRole.STAFF) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Staff may view stock but cannot change inventory.");
         // Lock the branch while changing inventory.
         Branch branch = branchRepository
                 .findTenantScopedBranchByIdForUpdate(branchId, tenantId)

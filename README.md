@@ -154,6 +154,19 @@ Business registration creates an OWNER account. Authorized owners and administra
 
 Existing roles are OWNER, ADMIN, MANAGER, and STAFF. Backend services enforce role policies and use authenticated principal identities for tenant-scoped operations. Ordinary profile updates cannot change tenant identity or roles. Passwords are hashed with BCrypt.
 
+| Permission | OWNER | ADMIN | MANAGER | STAFF |
+| --- | --- | --- | --- | --- |
+| Business operations across branches | Yes | Yes | Assigned branches | No |
+| Create branches and manage catalogue | Yes | Yes | View catalogue; edit assigned branches | No |
+| Receive/adjust stock and reorder levels | Yes | Yes | Assigned branches | No |
+| View stock and complete sales | All tenant branches | All tenant branches | Assigned branches | Assigned branches |
+| Manage users | Yes | Non-owner roles under existing privilege rules | No | No |
+| Reports | Tenant-wide | Tenant-wide | Explicit assigned branch; no business-wide contact reports | No |
+| Subscription/billing information | Yes, where available | No | No | No |
+| Change own profile/password | Yes | Yes | Yes | Yes |
+
+Product deletion remains owner-only and is blocked when stock or transaction history exists. Ownership changes are outside ordinary user-management endpoints. Tenant enumeration is disabled. React hides restricted navigation and disables unauthorized controls; backend authorization remains authoritative. No new roles or schema migrations are needed for this policy.
+
 The API currently uses stateless HTTP Basic authentication. The frontend stores sign-in credentials in browser local storage. Review this credential-storage approach before production deployment and serve the application over HTTPS.
 
 ## API modules
