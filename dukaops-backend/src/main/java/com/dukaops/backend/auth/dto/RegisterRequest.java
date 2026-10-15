@@ -31,6 +31,10 @@ public record RegisterRequest(
 
         @NotBlank
         @Size(min = 12, max = 64)
-        String password
+        String password,
+
+        @NotBlank
+        @Pattern(regexp = "^\\+255[1-9][0-9]{8}$", message = "Enter a valid Tanzanian phone number starting with +255")
+        String phoneNumber
 ) {
 }

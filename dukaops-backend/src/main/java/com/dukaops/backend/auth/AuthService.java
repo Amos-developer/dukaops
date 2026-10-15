@@ -58,6 +58,9 @@ public class AuthService {
                 new Tenant(request.businessName().trim(), slug)
         );
 
+        tenant.updateSettings(null, request.phoneNumber(), null,
+                tenant.getCurrency(), tenant.getTimezone(), tenant.getDateFormat(), null);
+
         TenantUser owner = tenantUserRepository.save(
                 new TenantUser(
                         tenant,
