@@ -192,7 +192,7 @@ public class TeamUserService {
         preventSelfPrivilegeChange(actor, user, request.role());
         requireAssignableRole(actor, request.role());
         user.updateProfile(user.getFullName(), request.role());
-        user.replaceBranchAssignments(buildAssignments(user.getTenant(), user, request.role(), user.getBranchAssignments().stream().map(a -> a.getBranch().getId()).collect(java.util.stream.Collectors.toSet())));
+        // A role change must not delete/reinsert the user's existing branch access.
         return toResponse(tenantUserRepository.save(user));
     }
 

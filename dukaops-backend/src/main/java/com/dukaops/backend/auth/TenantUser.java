@@ -133,8 +133,18 @@ public class TenantUser {
 
     public void replaceBranchAssignments(
             Set<TenantUserBranchAssignment> branchAssignments) {
-        this.branchAssignments.clear();
-        this.branchAssignments.addAll(branchAssignments);
+        // Preserve persisted rows for unchanged branches. Hibernate inserts new rows
+        // before orphan deletions, so clearing/rebuilding can violate (user, branch).
+        var requested = new java.util.LinkedHashMap<UUID, TenantUserBranchAssignment>();
+        for (var assignment : branchAssignments) {
+            requested.put(assignment.getBranch().getId(), assignment);
+        }
+        this.branchAssignments.removeIf(existing -> !requested.containsKey(existing.getBranch().getId()));
+        var retained = new java.util.HashSet<UUID>();
+        for (var existing : this.branchAssignments) retained.add(existing.getBranch().getId());
+        requested.forEach((branchId, assignment) -> {
+            if (!retained.contains(branchId)) this.branchAssignments.add(assignment);
+        });
     }
 
     public Instant getCreatedAt() {
