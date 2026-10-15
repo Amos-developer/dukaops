@@ -2,7 +2,7 @@ import { ArrowRight, BarChart3, Boxes, Check, ChevronRight, CircleCheck, ShieldC
 import { Link } from 'react-router-dom'
 import PublicLayout from '../components/layout/PublicLayout'
 
-const services = [{ icon: Boxes, title: 'Extract', text: 'Bring products, stock levels, and movements together in one dependable workspace.' }, { icon: Store, title: 'Identify', text: 'Quickly find low-stock products, branch gaps, and the next operational action.' }, { icon: BarChart3, title: 'Optimize', text: 'Use clean inventory insights to make confident purchasing and growth decisions.' }]
+const services = [{ icon: Boxes, title: 'Extract', text: 'Bring products, stock levels, and movements together in one dependable workspace.' }, { icon: Store, title: 'Identify', text: 'Quickly find low-stock products, branch gaps, and the next operational action.' }, { icon: BarChart3, title: 'Optimize', text: 'Use clean inventory insights to make confident purchasing and growth decisions.' }, { icon: Users, title: 'Collaborate', text: 'Give your team clear roles and branch access so everyone can work together with confidence.' }]
 const plans = [
   { name: 'Free Trial', price: 'Free', period: 'for 7 days', detail: 'Explore the workspace before choosing a plan', items: ['1 branch', 'Up to 50 products', 'Up to 2 team members', 'Inventory and sales tools'] },
   { name: 'Starter', price: 'TSH 10,000', period: '/ month', detail: 'For small businesses getting organized', items: ['1 branch', 'Up to 250 products', 'Up to 3 team members', 'Products, inventory and sales'] },
