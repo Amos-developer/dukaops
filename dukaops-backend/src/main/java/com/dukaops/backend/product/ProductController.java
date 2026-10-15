@@ -36,6 +36,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @DeleteMapping("/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID productId,
+            @AuthenticationPrincipal TenantUserPrincipal principal) {
+        productService.delete(principal, productId);
+    }
+
     @GetMapping
     public List<ProductResponse> list(
             @AuthenticationPrincipal TenantUserPrincipal principal) {

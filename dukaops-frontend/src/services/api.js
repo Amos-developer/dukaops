@@ -75,7 +75,7 @@ async function apiRequest(path, method, payload) {
   if (response.status === 401) throw new Error('We could not sign you in. Please check your email and password.')
   if (response.status === 403) throw new Error('You do not have permission to complete this action.')
   if (response.status === 400) throw new Error('Please review the form details and try again.')
-  if (response.status === 409) throw new Error('This record already exists. Please use different details.')
+  if (response.status === 409) throw new Error(method === 'DELETE' && path.startsWith('/products/') ? 'This product has stock or transaction records. Archive it instead.' : 'This record already exists. Please use different details.')
   if (path === '/auth/forgot-password' && response.status === 503) throw new Error('Password recovery is temporarily unavailable. Please try again later.')
   if (!response.ok) throw new Error('Something went wrong while saving your changes.')
   const responseBody = await response.text()
@@ -103,6 +103,7 @@ export const api = {
   saveSettings: (section, payload) => apiRequest(`/settings/${section}`, 'PUT', payload),
   currentUser: () => apiFetch('/auth/me'),
   createTeamUser: (payload) => apiRequest('/team/users', 'POST', payload),
+  deleteProduct: (id) => apiRequest(`/products/${id}`, 'DELETE'),
   branchDetails: (tenantId, branchId) => apiFetch(`/tenants/${tenantId}/branches/${branchId}`),
   updateReorderLevel: (branchId, productId, reorderLevel) => apiRequest(`/inventory/branches/${branchId}/stock/${productId}/reorder-level`, 'PATCH', { reorderLevel }),
   updateBranch: (tenantId, branchId, payload) => apiRequest(`/tenants/${tenantId}/branches/${branchId}`, 'PUT', payload),

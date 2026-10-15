@@ -17,6 +17,23 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @Transactional
 public class ProductService {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
+
+    public void delete(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID productId) {
+        if (actor.getRole() != com.dukaops.backend.auth.UserRole.OWNER)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the business owner can delete products.");
+        Product product = findProduct(actor.getTenantId(), productId);
+        entityManager.lock(product, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        for (String entity : List.of("StockLevel", "StockMovement", "SalesOrderItem")) {
+            long references = entityManager.createQuery("select count(record) from " + entity
+                    + " record where record.tenant.id = :tenantId and record.product.id = :productId", Long.class)
+                    .setParameter("tenantId", actor.getTenantId()).setParameter("productId", productId).getSingleResult();
+            if (references > 0) throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This product has stock or transaction records. Archive it instead.");
+        }
+        productRepository.delete(product);
+        productRepository.flush();
+    }
 
     private final ProductRepository productRepository;
     private final TenantRepository tenantRepository;
