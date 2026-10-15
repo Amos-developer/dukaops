@@ -1,4 +1,3 @@
-ALTER TABLE customers ADD CONSTRAINT uq_customers_tenant_id UNIQUE (tenant_id, id);
 CREATE TABLE customer_sms (
     id UUID PRIMARY KEY,
     tenant_id UUID NOT NULL REFERENCES tenants(id),
@@ -12,6 +11,6 @@ CREATE TABLE customer_sms (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (tenant_id, request_key),
     FOREIGN KEY (tenant_id, actor_id) REFERENCES tenant_users(tenant_id, id),
-    FOREIGN KEY (tenant_id, customer_id) REFERENCES customers(tenant_id, id)
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 CREATE INDEX idx_customer_sms_tenant_created ON customer_sms(tenant_id, created_at DESC);
