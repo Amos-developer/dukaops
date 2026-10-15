@@ -4,13 +4,14 @@ import { Building2, UserRound, ShieldCheck, SlidersHorizontal, Bell, CreditCard 
 import { api, getStoredCredentials, saveCredentials } from '../services/api'
 import { useFeedback } from '../components/ui/FeedbackProvider'
 import '../styles/settings-page.css'
+import CustomerSmsPanel from '../components/settings/CustomerSmsPanel'
 
 const sections = [ ['business', 'Business Profile', Building2], ['profile', 'My Profile', UserRound], ['security', 'Security', ShieldCheck], ['preferences', 'Business Preferences', SlidersHorizontal], ['notifications', 'Notifications', Bell], ['subscription', 'Subscription & Billing', CreditCard] ]
 
 export default function SettingsPage() {
   const [section, setSection] = useState('business')
   const session = useQuery({ queryKey: ['session'], queryFn: api.currentUser })
-  return <section className="settings-page"><header><h1>Settings</h1><p>Manage your business, account and system preferences.</p></header><div className="settings-layout"><nav aria-label="Settings sections">{sections.filter(([key]) => key !== 'subscription' || session.data?.role === 'OWNER').map(([key, label, Icon]) => <button key={key} className={section === key ? 'active' : ''} onClick={() => setSection(key)}><Icon size={16}/>{label}</button>)}</nav><SettingsPanel key={section} section={section}/></div></section>
+  return <section className="settings-page"><header><h1>Settings</h1><p>Manage your business, account and system preferences.</p></header><div className="settings-layout"><nav aria-label="Settings sections">{sections.filter(([key]) => key !== 'subscription' || session.data?.role === 'OWNER').map(([key, label, Icon]) => <button key={key} className={section === key ? 'active' : ''} onClick={() => setSection(key)}><Icon size={16}/>{label}</button>)}{['OWNER', 'ADMIN'].includes(session.data?.role) && <button className={section === 'sms' ? 'active' : ''} onClick={() => setSection('sms')}><Bell size={16}/>Customer SMS</button>}</nav>{section === 'sms' ? <CustomerSmsPanel/> : <SettingsPanel key={section} section={section}/>}</div></section>
 }
 
 function SettingsPanel({ section }) {

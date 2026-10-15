@@ -45,6 +45,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/api/settings/subscription", "/api/billing/**").hasRole("OWNER")
                 .requestMatchers("/api/refunds/**", "/api/sales/refunds/**").denyAll()
+                .requestMatchers("/api/messaging/**").hasAnyRole("OWNER", "ADMIN")
                 .requestMatchers("/api/tenants", "/api/tenants/").denyAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("OWNER")

@@ -1,5 +1,29 @@
 # DukaOps
 
+## Customer SMS — Twilio
+
+OWNER/ADMIN users can open **Settings → Customer SMS** to send individual customer-service SMS messages to active customers with Tanzanian mobile numbers. The backend normalizes local `07…`/`06…` numbers to `+255…`. Message history is tenant-scoped and paginated at 10 records per page.
+
+Set these environment variables **on the backend process only**, then restart it:
+
+```powershell
+$env:TWILIO_SMS_ENABLED="true"
+$env:TWILIO_ACCOUNT_SID="<your account SID>"
+$env:TWILIO_AUTH_TOKEN="<your auth token>"
+$env:TWILIO_FROM="<your Twilio-approved number or registered sender ID>"
+```
+
+Do not commit credentials or put them in Vite variables. SMS defaults to disabled. Apply additive Flyway migration V16 through normal backend startup. Trial destination restrictions and Tanzania sender registration still apply; configuration alone does not guarantee delivery. See [Twilio Tanzania guidance](https://www.twilio.com/en-us/guidelines/tz/sms).
+
+API (OWNER/ADMIN only):
+
+- `GET /api/messaging/sms/configuration`: availability only, never credentials.
+- `GET /api/messaging/sms?page=0`: latest messages, 10 per page.
+- `POST /api/messaging/sms`: `{ "customerId": "<UUID>", "requestKey": "<unique UUID>", "message": "Your order is ready.", "authorizedContact": true }`.
+- `POST /api/messaging/sms/{id}/refresh`: fetch the current delivery status from Twilio.
+
+Keep the same request key when retrying a submission. A persisted claim prevents repeated provider calls for that key. Changed payloads require a new key. Network timeouts are recorded as `unknown`, not retried automatically: check Twilio Console before another send. `queued`/`accepted` does not mean delivered. A crash after claiming can leave `submitting`, which also needs manual reconciliation. Explicit provider HTTP 4xx rejections are recorded as `failed`; no raw provider errors or credentials are returned. The initial cap is 100 submissions per tenant per hour; Twilio usage charges still apply. There is no automatic retry, bulk marketing, automated notification scheduling, or webhook in this version. Delivery refresh uses the authenticated Twilio API. Sender identity is deployment-wide, not customizable by tenant admins.
+
 DukaOps is a multi-tenant business management application for managing products, branch inventory, sales, staff, and business contacts from a single workspace. It combines a Spring Boot REST API with a responsive React interface.
 
 The project is under active development. Local development uses PostgreSQL and runs the backend and frontend directly on your computer.

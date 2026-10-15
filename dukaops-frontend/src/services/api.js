@@ -75,6 +75,11 @@ async function apiRequest(path, method, payload) {
   if (response.status === 401) throw new Error('We could not sign you in. Please check your email and password.')
   if (response.status === 403) throw new Error('You do not have permission to complete this action.')
   if (response.status === 400) throw new Error('Please review the form details and try again.')
+  if (path.startsWith('/messaging/')) {
+    if (response.status === 503) throw new Error('SMS is not configured. Ask your system administrator to enable it.')
+    if (response.status === 429) throw new Error('The hourly SMS limit has been reached. Please try again later.')
+    if (response.status === 502) throw new Error('We could not refresh the delivery status. Please try again later.')
+  }
   if (response.status === 409) throw new Error(method === 'DELETE' && path.startsWith('/products/') ? 'This product has stock or transaction records. Archive it instead.' : 'This record already exists. Please use different details.')
   if (path === '/auth/forgot-password' && response.status === 503) throw new Error('Password recovery is temporarily unavailable. Please try again later.')
   if (!response.ok) throw new Error('Something went wrong while saving your changes.')
@@ -97,6 +102,10 @@ async function apiFetchCollection(path) {
 }
 
 export const api = {
+  smsConfiguration: () => apiFetch('/messaging/sms/configuration'),
+  smsHistory: (page = 0) => apiFetch(`/messaging/sms?page=${page}`),
+  sendCustomerSms: (payload) => apiRequest('/messaging/sms', 'POST', payload),
+  refreshSms: (id) => apiRequest(`/messaging/sms/${id}/refresh`, 'POST'),
   requestPasswordReset: (email) => apiRequest('/auth/forgot-password', 'POST', { email }),
   resetPassword: (token, password) => apiRequest('/auth/reset-password', 'POST', { token, password }),
   settings: (section) => apiFetch(`/settings/${section}`),
