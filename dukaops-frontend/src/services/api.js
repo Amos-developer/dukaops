@@ -2,15 +2,18 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 const credentialKey = 'dukaops.credentials'
 
 export function getStoredCredentials() {
-  try { return JSON.parse(localStorage.getItem(credentialKey) || 'null') } catch { return null }
+  try { return JSON.parse(sessionStorage.getItem(credentialKey) || localStorage.getItem(credentialKey) || 'null') } catch { return null }
 }
 
-export function saveCredentials(email, password) {
-  localStorage.setItem(credentialKey, JSON.stringify({ email, password }))
+export function saveCredentials(email, password, remember = Boolean(localStorage.getItem(credentialKey))) {
+  clearCredentials()
+  const storage = remember ? localStorage : sessionStorage
+  storage.setItem(credentialKey, JSON.stringify({ email, password }))
 }
 
 export function clearCredentials() {
   localStorage.removeItem(credentialKey)
+  sessionStorage.removeItem(credentialKey)
 }
 
 function authHeaders() {
