@@ -66,8 +66,9 @@ export async function apiFetch(path) {
 
 async function apiRequest(path, method, payload) {
   let response
+  const publicRecovery = path === '/auth/forgot-password' || path === '/auth/reset-password'
   try {
-    response = await fetch(`${API_URL}${path}`, { method, headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: payload === undefined ? undefined : JSON.stringify(payload) })
+    response = await fetch(`${API_URL}${path}`, { method, headers: { 'Content-Type': 'application/json', ...(publicRecovery ? {} : authHeaders()) }, body: payload === undefined ? undefined : JSON.stringify(payload) })
   } catch {
     throw new Error('We could not connect to DukaOps right now. Please try again shortly.')
   }
@@ -75,12 +76,15 @@ async function apiRequest(path, method, payload) {
   if (response.status === 403) throw new Error('You do not have permission to complete this action.')
   if (response.status === 400) throw new Error('Please review the form details and try again.')
   if (response.status === 409) throw new Error('This record already exists. Please use different details.')
+  if (path === '/auth/forgot-password' && response.status === 503) throw new Error('Password recovery is temporarily unavailable. Please try again later.')
   if (!response.ok) throw new Error('Something went wrong while saving your changes.')
   const responseBody = await response.text()
   return responseBody.trim() ? JSON.parse(responseBody) : null
 }
 
 export const api = {
+  requestPasswordReset: (email) => apiRequest('/auth/forgot-password', 'POST', { email }),
+  resetPassword: (token, password) => apiRequest('/auth/reset-password', 'POST', { token, password }),
   settings: (section) => apiFetch(`/settings/${section}`),
   saveSettings: (section, payload) => apiRequest(`/settings/${section}`, 'PUT', payload),
   currentUser: () => apiFetch('/auth/me'),

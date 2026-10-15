@@ -19,6 +19,10 @@ public interface TenantUserRepository
 
     boolean existsByEmailIgnoreCase(String email);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select account from TenantUser account where lower(account.email) = lower(:email)")
+    Optional<TenantUser> findByEmailForPasswordReset(@Param("email") String email);
+
     boolean existsByEmailIgnoreCaseAndIdNot(
             String email,
             UUID userId

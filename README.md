@@ -120,6 +120,23 @@ Register a business through the public registration page, then sign in. Registra
 
 ## Configuration reference
 
+### Password recovery by email
+
+Login links to `/forgot-password`; reset links open `/reset-password`. Recovery requires a working SMTP account. Set these environment variables in the backend terminal before starting Spring Boot:
+
+```powershell
+$env:SMTP_HOST = '<your-smtp-host>'
+$env:SMTP_PORT = '587'
+$env:SMTP_USERNAME = '<your-smtp-username>'
+$env:SMTP_PASSWORD = '<your-smtp-password>'
+$env:MAIL_FROM = '<verified-sender-email>'
+$env:FRONTEND_URL = 'http://localhost:5173'
+```
+
+`SMTP_AUTH` and `SMTP_STARTTLS` default to `true`. Use your provider's SMTP credentials and a verified sender. Never place them in frontend configuration. `FRONTEND_URL` must be the actual browser-facing address; use HTTPS when deployed.
+
+Reset links expire after 30 minutes. Only token hashes are stored. Successful resets consume the token and invalidate links issued against the previous password. Requests for unknown accounts receive the same acknowledgement as recognized accounts. Requests for the same account are limited to one email per minute. Configure additional request-rate limits at your reverse proxy before public deployment. SMTP delivery must be verified with your own provider; it is not enabled merely by building the application.
+
 | Variable | Purpose |
 | --- | --- |
 | `POSTGRES_DB` | PostgreSQL database name; defaults to `dukaops_db` |

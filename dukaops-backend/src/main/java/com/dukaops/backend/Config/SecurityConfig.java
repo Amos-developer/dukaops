@@ -34,7 +34,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     HttpMethod.POST,
-                    "/api/auth/register"
+                    "/api/auth/register",
+                    "/api/auth/forgot-password",
+                    "/api/auth/reset-password"
                 ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/team/invitations/*/accept").permitAll()
                 .requestMatchers(
