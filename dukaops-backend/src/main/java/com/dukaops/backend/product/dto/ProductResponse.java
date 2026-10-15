@@ -17,7 +17,8 @@ public record ProductResponse(
     BigDecimal costPrice,
     ProductStatus status,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    UUID categoryId
 ) {
     public static ProductResponse from(Product product) {
         return new ProductResponse(
@@ -30,7 +31,8 @@ public record ProductResponse(
             product.getCostPrice(),
             product.getStatus(),
             product.getCreatedAt(),
-            product.getUpdatedAt()
+            product.getUpdatedAt(),
+            product.getCategoryId()
         );
     }
 }

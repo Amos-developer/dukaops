@@ -27,5 +27,10 @@ public record ProductRequest(
 
     @DecimalMin("0.00")
     @Digits(integer = 10, fraction = 2)
-    BigDecimal costPrice
-) {}
+    BigDecimal costPrice,
+    java.util.UUID categoryId
+) {
+    public ProductRequest(String sku, String name, String description, BigDecimal unitPrice, BigDecimal costPrice) {
+        this(sku, name, description, unitPrice, costPrice, null);
+    }
+}

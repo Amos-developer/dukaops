@@ -1,5 +1,23 @@
 # DukaOps
 
+## Product categories
+
+OWNER/ADMIN users manage tenant-specific categories from **Products → Manage categories**, then select a category in Add/Edit Product. Names are unique within the business (case-insensitive). Categories can be renamed, archived and reactivated. Archiving prevents new assignments without deleting existing assignments or inventory history. Select **Uncategorized** to clear an assignment. Products can be filtered by category.
+
+Migration **V18** adds category records, nullable product assignments, a tenant/name uniqueness index and a composite foreign key preventing cross-tenant assignments. Applied migrations V1–V17 are unchanged.
+
+Authenticated API endpoints:
+
+- `GET /api/categories` — tenant catalogue of categories.
+- `POST /api/categories` — OWNER/ADMIN only; `{ "name": "Beverages", "active": true }`.
+- `PUT /api/categories/{id}` — OWNER/ADMIN only; rename/archive/reactivate with the same body.
+- Product create/update requests accept optional `categoryId`; responses include it. `null` clears the assignment.
+- `GET /api/categories/inventory?branchId=<optional UUID>&view=quantity` — current inventory by category; `view=value` is also supported for OWNER/ADMIN/MANAGER. Restricted users only see assigned branches, including when no branch is selected. STAFF responses never contain cost values.
+
+Dashboard Product Mix and Reports Overview/Inventory/Products use the same reusable donut chart and API. Quantity is summed current stock; value is stock × current product cost, calculated with PostgreSQL numeric/Java BigDecimal. Unknown costs are excluded with a partial-valuation warning; sale prices are never substituted. Uncategorized and archived-category stock remain visible. This is a **current snapshot**, not historical valuation or profit, and does not follow sales date-range filters. No fake category data is seeded. Legend and management tables paginate at 10 rows.
+
+Frontend chart tests: `node --test src/services/categoryChart.test.js` from `dukaops-frontend`. Backend category tests use the existing PostgreSQL integration infrastructure (`CategoryIntegrationTest`).
+
 ## Customer SMS — Twilio
 
 OWNER/ADMIN users can open **Settings → Customer SMS** to send individual customer-service SMS messages to active customers with Tanzanian mobile numbers. The backend normalizes local `07…`/`06…` numbers to `+255…`. Message history is tenant-scoped and paginated at 10 records per page.

@@ -1,4 +1,5 @@
 import { ArrowUpRight, Boxes, ChevronDown, PieChart } from 'lucide-react'
+import InventoryByCategory from './InventoryByCategory'
 
 const branchColors = ['#3184ee', '#44b9ae', '#8e7be2', '#f2a45c']
 
@@ -13,5 +14,5 @@ export function MovementTrend({ movements = [] }) {
 }
 
 export function CategoryDistribution() {
-  return <section className="dashboard-card analytics-card category-empty-card"><div className="analytics-title"><div><p className="eyebrow">PRODUCT MIX</p><h2>Inventory by category</h2></div><PieChart size={20} className="muted-icon" /></div><div className="category-empty"><div className="empty-chart-icon"><Boxes size={24} /></div><strong>Categories are not configured</strong><span>Create product categories to see inventory distribution here.</span><button className="secondary-btn">Set up categories</button></div></section>
+  return <InventoryByCategory/>
 }

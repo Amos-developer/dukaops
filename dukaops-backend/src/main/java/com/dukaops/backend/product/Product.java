@@ -35,6 +35,12 @@ public class Product {
     @Column(name = "cost_price", precision = 12, scale = 2)
     private BigDecimal costPrice;
 
+    @Column(name = "category_id")
+    private UUID categoryId;
+
+    public UUID getCategoryId() { return categoryId; }
+    public void setCategoryId(UUID categoryId) { this.categoryId = categoryId; }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ProductStatus status = ProductStatus.ACTIVE;

@@ -47,6 +47,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/refunds/**", "/api/sales/refunds/**").denyAll()
                 .requestMatchers("/api/messaging/**").hasAnyRole("OWNER", "ADMIN")
                 .requestMatchers("/api/tenants", "/api/tenants/").denyAll()
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").authenticated()
+                .requestMatchers("/api/categories/**").hasAnyRole("OWNER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("OWNER")
                 .requestMatchers("/api/products/**", "/api/team/**", "/api/contacts/**").hasAnyRole("OWNER", "ADMIN")

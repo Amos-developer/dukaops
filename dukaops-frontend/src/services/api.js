@@ -102,6 +102,14 @@ async function apiFetchCollection(path) {
 }
 
 export const api = {
+  categories: () => apiFetch('/categories'),
+  createCategory: (payload) => apiRequest('/categories', 'POST', payload),
+  updateCategory: (id, payload) => apiRequest(`/categories/${id}`, 'PUT', payload),
+  categoryInventory: ({ branchId = '', view = 'quantity' } = {}) => {
+    const params = new URLSearchParams({ view })
+    if (branchId) params.set('branchId', branchId)
+    return apiFetch(`/categories/inventory?${params}`)
+  },
   smsConfiguration: () => apiFetch('/messaging/sms/configuration'),
   smsHistory: (page = 0) => apiFetch(`/messaging/sms?page=${page}`),
   sendCustomerSms: (payload) => apiRequest('/messaging/sms', 'POST', payload),

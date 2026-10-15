@@ -19,6 +19,8 @@ import StatusBadge from '../components/ui/StatusBadge'
 import CrudModal from '../components/ui/CrudModal'
 import { api } from '../services/api'
 import { useFeedback } from '../components/ui/FeedbackProvider'
+import ManageCategories from '../components/products/ManageCategories'
+import { useSearchParams } from 'react-router-dom'
 
 const tabs = [
   { key: 'ALL', label: 'All' },
@@ -47,7 +49,7 @@ function ProductMetric({ icon, label, value, detail }) {
 }
 
 function ProductIdentity({ product }) {
-  return <div className="product-identity"><span className="product-avatar">{initials(product.name)}</span><span><strong>{product.name || 'Unnamed product'}</strong><small>{product.description || 'Product catalogue item'}</small></span></div>
+  return <div className="product-identity"><span className="product-avatar">{initials(product.name)}</span><span><strong>{product.name || 'Unnamed product'}</strong><small>{product.categoryName || 'Uncategorized'}</small><small>{product.description || 'Product catalogue item'}</small></span></div>
 }
 
 function ProductStatus({ status }) {
@@ -62,6 +64,12 @@ export default function ProductsPage() {
   const session = useQuery({ queryKey: ['session'], queryFn: api.currentUser })
   const owner = session.data?.role === 'OWNER'
   const editor = ['OWNER', 'ADMIN'].includes(session.data?.role)
+  const categories = useQuery({ queryKey: ['categories'], queryFn: api.categories })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [managing, setManaging] = useState(false)
+  const [categoryFilter, setCategoryFilter] = useState('ALL')
+  const showCategories = editor && (managing || searchParams.get('manageCategories') === '1')
+  const closeCategories = () => { setManaging(false); if (searchParams.has('manageCategories')) { const next = new URLSearchParams(searchParams); next.delete('manageCategories'); setSearchParams(next, { replace: true }) } }
   const [deleting, setDeleting] = useState(null)
   const deleteProduct = async event => { event.preventDefault(); setSaving(true); setFormError(''); try { await api.deleteProduct(deleting.id); setSelected(current => current.filter(id => id !== deleting.id)); await queryClient.invalidateQueries(); setDeleting(null); feedback.success('Product deleted successfully.') } catch (failure) { setFormError(failure.message); feedback.error(failure.message) } finally { setSaving(false) } }
   const [search, setSearch] = useState('')
@@ -72,28 +80,29 @@ export default function ProductsPage() {
   const [form, setForm] = useState({ sku: '', name: '', description: '', unitPrice: '', costPrice: '' })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
-  const allProducts = data?.products || []
+  const allProducts = (data?.products || []).map(product => ({ ...product, categoryName: (categories.data || []).find(category => category.id === product.categoryId)?.name || 'Uncategorized' }))
 
   const products = useMemo(() => allProducts.filter((product) => {
     const query = search.trim().toLowerCase()
     const matchesSearch = !query || `${product.name || ''} ${product.sku || ''}`.toLowerCase().includes(query)
     const matchesStatus = statusTab === 'ALL' || (statusTab === 'ACTIVE' && product.status === 'ACTIVE') || (statusTab === 'DRAFTS' && product.status === 'DRAFT') || (statusTab === 'ARCHIVED' && product.status === 'INACTIVE')
-    return matchesSearch && matchesStatus
-  }), [allProducts, search, statusTab])
+    const matchesCategory = categoryFilter === 'ALL' || (categoryFilter === 'NONE' ? !product.categoryId : product.categoryId === categoryFilter)
+    return matchesSearch && matchesStatus && matchesCategory
+  }), [allProducts, search, statusTab, categoryFilter])
 
   const totalValue = allProducts.reduce((sum, product) => sum + Number(product.unitPrice || 0), 0)
   const toggleSelected = (id) => setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
   const selectAll = () => setSelected(selected.length === products.length ? [] : products.map((product) => product.id))
   const openCreate = () => { setForm({ sku: '', name: '', description: '', unitPrice: '', costPrice: '' }); setFormError(''); setModal({ type: 'create' }) }
-  const openEdit = (product) => { setForm({ sku: product.sku || '', name: product.name || '', description: product.description || '', unitPrice: product.unitPrice || '', costPrice: product.costPrice || '' }); setFormError(''); setModal({ type: 'edit', product }) }
-  const submitProduct = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { const payload = { ...form, unitPrice: Number(form.unitPrice), costPrice: form.costPrice === '' ? null : Number(form.costPrice) }; if (modal.type === 'create') { await api.createProduct(payload); feedback.success('Product created successfully.') } else { await api.updateProduct(modal.product.id, payload); feedback.success('Product updated successfully.') } await queryClient.invalidateQueries({ queryKey: ['products'] }); setModal(null) } catch (error) { setFormError(error.message); feedback.error(error.message) } finally { setSaving(false) } }
+  const openEdit = (product) => { setForm({ sku: product.sku || '', name: product.name || '', description: product.description || '', unitPrice: product.unitPrice ?? '', costPrice: product.costPrice ?? '', categoryId: product.categoryId || '' }); setFormError(''); setModal({ type: 'edit', product }) }
+  const submitProduct = async (event) => { event.preventDefault(); setSaving(true); setFormError(''); try { const payload = { ...form, categoryId: form.categoryId || null, unitPrice: Number(form.unitPrice), costPrice: form.costPrice === '' ? null : Number(form.costPrice) }; if (modal.type === 'create') { await api.createProduct(payload); feedback.success('Product created successfully.') } else { await api.updateProduct(modal.product.id, payload); feedback.success('Product updated successfully.') } await Promise.all([queryClient.invalidateQueries({ queryKey: ['products'] }), queryClient.invalidateQueries({ queryKey: ['categories'] }), queryClient.invalidateQueries({ queryKey: ['category-inventory'] })]); setModal(null) } catch (error) { setFormError(error.message); feedback.error(error.message) } finally { setSaving(false) } }
   const toggleStatus = async (product) => { setSaving(true); try { const nextStatus = product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; await api.changeProductStatus(product.id, nextStatus); await queryClient.invalidateQueries({ queryKey: ['products'] }); feedback.success(nextStatus === 'ACTIVE' ? 'Product activated successfully.' : 'Product archived successfully.') } catch (error) { setFormError(error.message); feedback.error(error.message); setModal({ type: 'error' }) } finally { setSaving(false) } }
 
   return (
     <section className="module-page products-page">
       <div className="products-heading module-heading">
         <div><p className="eyebrow">CATALOGUE</p><h1>Products</h1><p>Manage inventory, pricing and availability across your store.</p></div>
-        <div className="products-heading-actions"><button className="secondary-btn"><Download size={15} /> Export</button><button className="primary-btn" disabled={!editor} onClick={openCreate}><Plus size={15} /> Add product</button></div>
+        <div className="products-heading-actions">{editor && <button className="secondary-btn" onClick={() => setManaging(true)}>Manage categories</button>}<button className="secondary-btn"><Download size={15} /> Export</button><button className="primary-btn" disabled={!editor} onClick={openCreate}><Plus size={15} /> Add product</button></div>
       </div>
 
       <div className="products-kpis">
@@ -105,7 +114,7 @@ export default function ProductsPage() {
 
       <div className="products-toolbar">
         <label className="product-search"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by product name or ID" /></label>
-        <button className="toolbar-btn"><Filter size={15} /> Filter</button>
+        <select className="product-category-filter" aria-label="Filter by category" value={categoryFilter} onChange={event => setCategoryFilter(event.target.value)}><option value="ALL">All categories</option><option value="NONE">Uncategorized</option>{(categories.data || []).map(category => <option key={category.id} value={category.id}>{category.name}{category.active ? '' : ' (Archived)'}</option>)}</select>
         <div className="view-toggle" aria-label="View options"><button className={view === 'grid' ? 'active' : ''} onClick={() => setView('grid')} aria-label="Grid view"><Grid2X2 size={15} /></button><button className={view === 'list' ? 'active' : ''} onClick={() => setView('list')} aria-label="List view"><List size={15} /></button></div>
         <div className="status-tabs">{tabs.map((tab) => <button key={tab.key} className={statusTab === tab.key ? 'active' : ''} onClick={() => setStatusTab(tab.key)}>{tab.label}</button>)}</div>
       </div>
@@ -119,12 +128,16 @@ export default function ProductsPage() {
           <div className="table-responsive products-desktop-table">
             <PaginatedTable className="table products-table"><thead><tr><th><input type="checkbox" checked={products.length > 0 && selected.length === products.length} onChange={selectAll} aria-label="Select all products" /></th><th>Product name</th><th>ID &amp; create date</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>{products.map((product) => <tr key={product.id}><td><input type="checkbox" checked={selected.includes(product.id)} onChange={() => toggleSelected(product.id)} aria-label={`Select ${product.name}`} /></td><td><ProductIdentity product={product} /></td><td><strong>{product.sku || `#${product.id}`}</strong><small className="table-subtext">{formatDate(product.createdAt)}</small></td><td><strong>TSH {Number(product.unitPrice || 0).toLocaleString()}</strong><small className="table-subtext">Unit price</small></td><td>—</td><td><ProductStatus status={product.status} /></td><td><div className="row-actions"><button className="row-action" disabled={!editor} onClick={() => openEdit(product)}>Edit</button><button className="row-action" onClick={() => toggleStatus(product)} disabled={saving || !editor}>{product.status === 'ACTIVE' ? 'Archive' : 'Activate'}</button>{owner && <button className="row-action" disabled={saving} onClick={() => { setFormError(''); setDeleting(product) }}>Delete</button>}</div></td></tr>)}</tbody></PaginatedTable>
           </div>
-          <div className="products-mobile-list">{products.map((product) => <article className="product-mobile-card" key={product.id}><div className="product-mobile-top"><input type="checkbox" checked={selected.includes(product.id)} onChange={() => toggleSelected(product.id)} aria-label={`Select ${product.name}`} /><ProductIdentity product={product} />{owner && <button className="row-action" onClick={() => { setFormError(''); setDeleting(product) }}>Delete</button>}</div><div className="product-mobile-meta"><span><small>SKU</small><strong>{product.sku || `#${product.id}`}</strong></span><span><small>Price</small><strong>TSH {Number(product.unitPrice || 0).toLocaleString()}</strong></span><span><small>Status</small><ProductStatus status={product.status} /></span></div></article>)}</div>
+          <div className="products-mobile-list">{products.map((product) => <article className="product-mobile-card" key={product.id}><div className="product-mobile-top"><input type="checkbox" checked={selected.includes(product.id)} onChange={() => toggleSelected(product.id)} aria-label={`Select ${product.name}`} /><ProductIdentity product={product} />{editor && <button className="row-action" onClick={() => openEdit(product)}>Edit</button>}{owner && <button className="row-action" onClick={() => { setFormError(''); setDeleting(product) }}>Delete</button>}</div><div className="product-mobile-meta"><span><small>SKU</small><strong>{product.sku || `#${product.id}`}</strong></span><span><small>Price</small><strong>TSH {Number(product.unitPrice || 0).toLocaleString()}</strong></span><span><small>Status</small><ProductStatus status={product.status} /></span></div></article>)}</div>
         </>}
       </div>
 
       {selected.length > 0 && <div className="bulk-bar"><span>{selected.length} Selected</span><button><Download size={15} /> Export</button><button><span>↗</span> Edit info</button>{owner && <button disabled={selected.length !== 1} title="Select one product to delete" onClick={() => { setFormError(''); setDeleting(allProducts.find(product => product.id === selected[0])) }}><Trash2 size={15} /> Delete</button>}<button className="bulk-close" onClick={() => setSelected([])} aria-label="Clear selected products"><X size={16} /></button></div>}
-      {modal && modal.type !== 'error' && <CrudModal title={modal.type === 'create' ? 'Add product' : 'Edit product'} description="Keep your catalogue details accurate and ready for stock operations." onClose={() => setModal(null)} onSubmit={submitProduct} submitLabel={modal.type === 'create' ? 'Create product' : 'Save product'} busy={saving} error={formError}><div className="crud-form-grid"><div className="crud-field"><label htmlFor="product-sku">SKU</label><input id="product-sku" required value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-name">Product name</label><input id="product-name" required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-price">Unit price (TSH)</label><input id="product-price" type="number" min="0" step="0.01" required value={form.unitPrice} onChange={(event) => setForm({ ...form, unitPrice: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-cost">Cost price (TSH)</label><input id="product-cost" type="number" min="0" step="0.01" value={form.costPrice} onChange={(event) => setForm({ ...form, costPrice: event.target.value })} /></div><div className="crud-field full"><label htmlFor="product-description">Description</label><textarea id="product-description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div></div></CrudModal>}
+      {modal && modal.type !== 'error' && <CrudModal title={modal.type === 'create' ? 'Add product' : 'Edit product'} description="Keep your catalogue details accurate and ready for stock operations." onClose={() => setModal(null)} onSubmit={submitProduct} submitLabel={modal.type === 'create' ? 'Create product' : 'Save product'} busy={saving} error={formError}>
+        <label className="product-category-select"><span>Category</span><select value={form.categoryId || ''} onChange={event => setForm({ ...form, categoryId: event.target.value })} disabled={saving || categories.isPending || categories.isError}><option value="">Uncategorized</option>{(categories.data || []).filter(category => category.active || category.id === form.categoryId).map(category => <option key={category.id} value={category.id}>{category.name}{category.active ? '' : ' (Archived)'}</option>)}</select>{categories.isError && <small role="alert">Categories could not be loaded. <button type="button" onClick={() => categories.refetch()}>Retry</button></small>}</label>
+        <div className="crud-form-grid"><div className="crud-field"><label htmlFor="product-sku">SKU</label><input id="product-sku" required value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-name">Product name</label><input id="product-name" required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-price">Unit price (TSH)</label><input id="product-price" type="number" min="0" step="0.01" required value={form.unitPrice} onChange={(event) => setForm({ ...form, unitPrice: event.target.value })} /></div><div className="crud-field"><label htmlFor="product-cost">Cost price (TSH)</label><input id="product-cost" type="number" min="0" step="0.01" value={form.costPrice} onChange={(event) => setForm({ ...form, costPrice: event.target.value })} /></div><div className="crud-field full"><label htmlFor="product-description">Description</label><textarea id="product-description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div></div></CrudModal>}
+      {showCategories && <ManageCategories onClose={closeCategories}/>}
+      {categories.isError && <p role="alert">Category names could not be loaded. <button onClick={() => categories.refetch()}>Retry</button></p>}
       {modal?.type === 'error' && <CrudModal title="Could not update product" onClose={() => setModal(null)} onSubmit={(event) => { event.preventDefault(); setModal(null) }} submitLabel="Close" error={formError}><p className="crud-help">Please try again after checking your connection.</p></CrudModal>}
       {deleting && <CrudModal title="Delete product" description="This action permanently removes an unused product." onClose={() => setDeleting(null)} onSubmit={deleteProduct} submitLabel="Delete product" busy={saving} error={formError}><p>Delete <strong>{deleting.name}</strong> ({deleting.sku})?</p><p>Products with stock or transaction history must be archived instead.</p></CrudModal>}
     </section>

@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @Transactional
 public class ProductService {
+    @org.springframework.beans.factory.annotation.Autowired private com.dukaops.backend.category.CategoryService categories;
     @org.springframework.beans.factory.annotation.Autowired private com.dukaops.backend.audit.SecurityAuditService audit;
     @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
@@ -50,6 +51,9 @@ public class ProductService {
             UUID tenantId,
             ProductRequest request) {
 
+        audit.requireBusinessAdmin(tenantId);
+        categories.validateAssignment(tenantId, request.categoryId(), null);
+
         Tenant tenant = tenantRepository.findById(tenantId)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Business not found"));
@@ -72,6 +76,7 @@ public class ProductService {
             request.costPrice()
         );
 
+        product.setCategoryId(request.categoryId());
         return ProductResponse.from(productRepository.save(product));
     }
 
@@ -103,6 +108,8 @@ public class ProductService {
 
         Product product = findProduct(tenantId, productId);
         String sku = normalizeSku(request.sku());
+        categories.validateAssignment(tenantId, request.categoryId(), product.getCategoryId());
+        product.setCategoryId(request.categoryId());
 
         if (productRepository
                 .existsByTenant_IdAndSkuIgnoreCaseAndIdNot(
