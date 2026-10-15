@@ -106,4 +106,24 @@ class RoleAccessIntegrationTest {
                 + "\",\"items\":[{\"productId\":\"" + UUID.randomUUID() + "\",\"quantity\":1}]}";
         mvc.perform(post("/api/sales/checkout").with(user(principal(staff))).contentType("application/json").content(payload)).andExpect(status().isForbidden());
     }
+
+    @Test void totalOrdersIncludesAllStatusesAndExcludesOtherTenants() throws Exception {
+        for (var status : new OrderStatus[] { OrderStatus.DRAFT, OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.CANCELLED }) {
+            orders.saveAndFlush(new SalesOrder(tenant, assigned, owner, "Customer", null, status, BigDecimal.TEN, UUID.randomUUID().toString()));
+        }
+        assertEquals(6, sales.summary(principal(owner)).totalOrders());
+        assertEquals(6, sales.summary(principal(admin)).totalOrders());
+        assertEquals(5, sales.summary(principal(manager)).totalOrders());
+        assertEquals(5, sales.summary(principal(staff)).totalOrders());
+        mvc.perform(get("/api/sales/summary").with(user(principal(owner))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalOrders").value(6));
+    }
+
+    @Test void emptyTenantAndUnassignedUserHaveZeroOrders() {
+        var emptyTenant = tenants.saveAndFlush(new Tenant("Empty", "empty-sales-" + UUID.randomUUID()));
+        var emptyOwner = account(emptyTenant, UserRole.OWNER);
+        assertEquals(0, sales.summary(principal(emptyOwner)).totalOrders());
+        var unassigned = account(tenant, UserRole.STAFF);
+        assertEquals(0, sales.summary(principal(unassigned)).totalOrders());
+    }
 }

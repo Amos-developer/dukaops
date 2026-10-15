@@ -11,6 +11,7 @@ import {
   PackageOpen,
   Plus,
   Search,
+  ShoppingCart,
   Trash2,
   X,
 } from 'lucide-react'
@@ -62,6 +63,13 @@ export default function ProductsPage() {
   const queryClient = useQueryClient()
   const feedback = useFeedback()
   const session = useQuery({ queryKey: ['session'], queryFn: api.currentUser })
+  const salesSummary = useQuery({
+    queryKey: ['sales-summary'], queryFn: api.salesSummary, enabled: Boolean(session.data),
+    select: summary => {
+      if (!Number.isSafeInteger(summary?.totalOrders) || summary.totalOrders < 0) throw new Error('Order totals are unavailable.')
+      return summary
+    },
+  })
   const owner = session.data?.role === 'OWNER'
   const editor = ['OWNER', 'ADMIN'].includes(session.data?.role)
   const categories = useQuery({ queryKey: ['categories'], queryFn: api.categories })
@@ -108,7 +116,7 @@ export default function ProductsPage() {
       <div className="products-kpis">
         <ProductMetric icon={<PackageOpen size={15} />} label="Total products" value={allProducts.length.toLocaleString()} detail="Live catalogue" />
         <ProductMetric icon={<span className="metric-symbol">TSH</span>} label="Catalogue value" value={`TSH ${totalValue.toLocaleString()}`} detail="Based on unit prices" />
-        <ProductMetric icon={<span className="metric-symbol">↗</span>} label="Total orders" value="—" detail="Sales module coming soon" />
+        <ProductMetric icon={<ShoppingCart size={15} aria-hidden="true" />} label="Total orders" value={salesSummary.isPending ? '…' : salesSummary.isError ? '—' : (salesSummary.data?.totalOrders ?? 0).toLocaleString()} detail={salesSummary.isError ? <span role="alert">Could not load orders. <button type="button" className="row-action" onClick={() => salesSummary.refetch()}>Retry</button></span> : salesSummary.isPending ? 'Loading orders…' : salesSummary.data?.totalOrders === 0 ? 'No orders yet' : 'All statuses · accessible branches'} />
         <ProductMetric icon={<span className="metric-symbol">◎</span>} label="Customers" value="—" detail="Customer data coming soon" />
       </div>
 

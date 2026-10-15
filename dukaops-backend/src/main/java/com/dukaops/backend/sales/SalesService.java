@@ -36,13 +36,15 @@ import com.dukaops.backend.auth.*; import com.dukaops.backend.branch.*; import c
   query.multiselect(
     builder.sum(builder.<BigDecimal>selectCase().when(completed, root.<BigDecimal>get("totalAmount")).otherwise(BigDecimal.ZERO)),
     builder.sum(builder.<Long>selectCase().when(completed, 1L).otherwise(0L)),
-    builder.sum(builder.<Long>selectCase().when(builder.equal(root.get("status"), OrderStatus.PENDING),1L).otherwise(0L)));
+    builder.sum(builder.<Long>selectCase().when(builder.equal(root.get("status"), OrderStatus.PENDING),1L).otherwise(0L)),
+    builder.count(root));
   query.where(SalesScope.visibleTo(actor).toPredicate(root, query, builder));
   Object[] totals = entityManager.createQuery(query).getSingleResult();
   BigDecimal revenue = totals[0] == null ? BigDecimal.ZERO : (BigDecimal) totals[0];
   long completedCount = totals[1] == null ? 0 : ((Number) totals[1]).longValue();
   long pendingCount = totals[2] == null ? 0 : ((Number) totals[2]).longValue();
-  return new SalesSummaryResponse(revenue, completedCount, pendingCount, completedCount == 0 ? BigDecimal.ZERO : revenue.divide(BigDecimal.valueOf(completedCount),2,RoundingMode.HALF_UP));
+  long totalOrders = ((Number) totals[3]).longValue();
+  return new SalesSummaryResponse(revenue, completedCount, pendingCount, completedCount == 0 ? BigDecimal.ZERO : revenue.divide(BigDecimal.valueOf(completedCount),2,RoundingMode.HALF_UP), totalOrders);
  }
  private SalesOrderResponse response(SalesOrder o){return new SalesOrderResponse(o.getId(),o.getBranch().getId(),o.getCustomerName(),o.getStatus(),o.getTotalAmount(),o.getCreatedAt());} private ResponseStatusException error(HttpStatus s,String m){return new ResponseStatusException(s,m);}
 }
