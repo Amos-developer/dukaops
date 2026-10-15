@@ -109,6 +109,37 @@ public class BranchService {
         return toResponse(branch);
     }
 
+    @Transactional
+    public BranchResponse update(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID branchId,
+            com.dukaops.backend.branch.dto.UpdateBranchRequest request) {
+        requireOwner(actor);
+        var branch = branchRepository.findTenantScopedBranchByIdForUpdate(branchId, actor.getTenantId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found."));
+        String code = request.code().trim().toUpperCase(Locale.ROOT);
+        if (branchRepository.existsByTenant_IdAndCodeAndIdNot(actor.getTenantId(), code, branchId))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Branch code is already in use.");
+        branch.updateDetails(request.name().trim(), code);
+        return toResponse(branch);
+    }
+
+    @Transactional
+    public BranchResponse status(com.dukaops.backend.auth.TenantUserPrincipal actor, UUID branchId, BranchStatus status) {
+        requireOwner(actor);
+        var branch = branchRepository.findTenantScopedBranchByIdForUpdate(branchId, actor.getTenantId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found."));
+        var tenant = tenantRepository.findById(actor.getTenantId()).orElseThrow();
+        if (status == BranchStatus.SUSPENDED && (branch.isMain()
+                || (tenant.getDefaultBranch() != null && tenant.getDefaultBranch().getId().equals(branchId))))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The main or default branch cannot be deactivated.");
+        branch.updateStatus(status);
+        return toResponse(branch);
+    }
+
+    private void requireOwner(com.dukaops.backend.auth.TenantUserPrincipal actor) {
+        if (actor.getRole() != com.dukaops.backend.auth.UserRole.OWNER)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the business owner can manage branches.");
+    }
+
     private BranchResponse toResponse(Branch branch) {
         return new BranchResponse(
             branch.getId(),

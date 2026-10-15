@@ -24,6 +24,8 @@ public interface BranchRepository
             UUID tenantId,
             String code);
 
+    boolean existsByTenant_IdAndCodeAndIdNot(UUID tenantId, String code, UUID id);
+
     boolean existsByTenant_IdAndMainBranchTrue(
             UUID tenantId);
 

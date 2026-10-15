@@ -74,6 +74,9 @@ public class Branch {
         return id;
     }
 
+    public void updateDetails(String name, String code) { this.name = name; this.code = code; }
+    public void updateStatus(BranchStatus status) { this.status = status; }
+
     public Tenant getTenant() {
         return tenant;
     }

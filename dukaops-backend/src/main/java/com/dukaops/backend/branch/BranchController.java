@@ -26,12 +26,16 @@ public class BranchController {
     public BranchResponse create(
             @PathVariable UUID tenantId,
             @Valid @RequestBody CreateBranchRequest request) {
+        checkTenant(tenantId);
+        if (principal().getRole() != com.dukaops.backend.auth.UserRole.OWNER)
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "Only the business owner can create branches.");
         return branchService.create(tenantId, request);
     }
 
     @GetMapping
     public List<BranchResponse> findAll(
             @PathVariable UUID tenantId) {
+        checkTenant(tenantId);
         return branchService.findAll(tenantId);
     }
 
@@ -39,6 +43,26 @@ public class BranchController {
     public BranchResponse findById(
             @PathVariable UUID tenantId,
             @PathVariable UUID branchId) {
+        checkTenant(tenantId);
         return branchService.findById(tenantId, branchId);
+    }
+    @PutMapping("/{branchId}")
+    public BranchResponse update(@PathVariable UUID tenantId, @PathVariable UUID branchId,
+            @Valid @RequestBody com.dukaops.backend.branch.dto.UpdateBranchRequest request) {
+        checkTenant(tenantId);
+        return branchService.update(principal(), branchId, request);
+    }
+    @PatchMapping("/{branchId}/status")
+    public BranchResponse status(@PathVariable UUID tenantId, @PathVariable UUID branchId,
+            @Valid @RequestBody com.dukaops.backend.branch.dto.BranchStatusRequest request) {
+        checkTenant(tenantId);
+        return branchService.status(principal(), branchId, request.status());
+    }
+    private com.dukaops.backend.auth.TenantUserPrincipal principal() {
+        return (com.dukaops.backend.auth.TenantUserPrincipal) org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+    private void checkTenant(UUID tenantId) {
+        if (!principal().getTenantId().equals(tenantId))
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found.");
     }
 }
