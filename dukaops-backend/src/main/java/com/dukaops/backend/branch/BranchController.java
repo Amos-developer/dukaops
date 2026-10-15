@@ -36,7 +36,7 @@ public class BranchController {
     public List<BranchResponse> findAll(
             @PathVariable UUID tenantId) {
         checkTenant(tenantId);
-        return branchService.findAll(tenantId);
+        return branchService.accessibleBranches(principal());
     }
 
     @GetMapping("/{branchId}")

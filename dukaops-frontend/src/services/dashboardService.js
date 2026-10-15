@@ -27,8 +27,12 @@ export async function getInventoryPageData() {
   const user = await api.currentUser()
   const [branches, products] = await Promise.all([api.branches(user.tenantId), api.products()])
   const branch = branches.find((item) => item.isMain) || branches[0]
-  const stock = branch ? await api.stock(branch.id) : []
-  const movements = branch ? await api.branchMovements(branch.id) : []
+  const records = await Promise.all(branches.map(async location => ({
+    stock: (await api.stock(location.id)).map(item => ({ ...item, branchName: location.name })),
+    movements: (await api.branchMovements(location.id)).map(item => ({ ...item, branchName: location.name })),
+  })))
+  const stock = records.flatMap(record => record.stock)
+  const movements = records.flatMap(record => record.movements).sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt))
   return { branches, products, stock, movements, selectedBranch: branch, isDemo: false }
 }
 

@@ -103,6 +103,7 @@ export const api = {
   saveSettings: (section, payload) => apiRequest(`/settings/${section}`, 'PUT', payload),
   currentUser: () => apiFetch('/auth/me'),
   createTeamUser: (payload) => apiRequest('/team/users', 'POST', payload),
+  branchDetails: (tenantId, branchId) => apiFetch(`/tenants/${tenantId}/branches/${branchId}`),
   updateReorderLevel: (branchId, productId, reorderLevel) => apiRequest(`/inventory/branches/${branchId}/stock/${productId}/reorder-level`, 'PATCH', { reorderLevel }),
   updateBranch: (tenantId, branchId, payload) => apiRequest(`/tenants/${tenantId}/branches/${branchId}`, 'PUT', payload),
   setBranchStatus: (tenantId, branchId, status) => apiRequest(`/tenants/${tenantId}/branches/${branchId}/status`, 'PATCH', { status }),

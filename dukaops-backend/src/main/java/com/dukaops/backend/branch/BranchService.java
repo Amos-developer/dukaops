@@ -16,6 +16,16 @@ import java.util.UUID;
 
 @Service
 public class BranchService {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
+
+    @Transactional(readOnly = true)
+    public List<BranchResponse> accessibleBranches(com.dukaops.backend.auth.TenantUserPrincipal actor) {
+        if (actor.getRole() == com.dukaops.backend.auth.UserRole.OWNER || actor.getRole() == com.dukaops.backend.auth.UserRole.ADMIN)
+            return findAll(actor.getTenantId());
+        return entityManager.createQuery("select assignment.branch from TenantUserBranchAssignment assignment where assignment.tenant.id = :tenantId and assignment.user.id = :userId order by assignment.branch.name", Branch.class)
+                .setParameter("tenantId", actor.getTenantId()).setParameter("userId", actor.getUserId())
+                .getResultList().stream().map(this::toResponse).toList();
+    }
 
     private final BranchRepository branchRepository;
     private final TenantRepository tenantRepository;
