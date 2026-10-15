@@ -202,8 +202,4 @@ Add a new versioned Flyway migration for each schema change. Never edit or delet
 
 **Migration or schema validation fails:** inspect the startup error and applied migration history before changing anything. Preserve existing data and use additive migrations.
 
-## Contributing
 
-Keep changes focused, follow the existing controller/service/repository and DTO conventions, and add meaningful tests for security or persistence changes. Run the relevant checks and describe any unverified behavior in the pull request. Do not commit credentials or database exports.
-
-Suggested commit prefixes include `feat`, `fix`, `test`, `style`, and `docs`.
