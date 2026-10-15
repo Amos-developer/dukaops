@@ -12,6 +12,7 @@ import {
   Plus,
   Search,
   ShoppingCart,
+  Users,
   Trash2,
   X,
 } from 'lucide-react'
@@ -72,6 +73,13 @@ export default function ProductsPage() {
   })
   const owner = session.data?.role === 'OWNER'
   const editor = ['OWNER', 'ADMIN'].includes(session.data?.role)
+  const customerSummary = useQuery({
+    queryKey: ['customer-summary'], queryFn: api.customerSummary, enabled: editor,
+    select: summary => {
+      if (!Number.isSafeInteger(summary?.totalCustomers) || summary.totalCustomers < 0) throw new Error('Customer totals are unavailable.')
+      return summary
+    },
+  })
   const categories = useQuery({ queryKey: ['categories'], queryFn: api.categories })
   const [searchParams, setSearchParams] = useSearchParams()
   const [managing, setManaging] = useState(false)
@@ -117,7 +125,7 @@ export default function ProductsPage() {
         <ProductMetric icon={<PackageOpen size={15} />} label="Total products" value={allProducts.length.toLocaleString()} detail="Live catalogue" />
         <ProductMetric icon={<span className="metric-symbol">TSH</span>} label="Catalogue value" value={`TSH ${totalValue.toLocaleString()}`} detail="Based on unit prices" />
         <ProductMetric icon={<ShoppingCart size={15} aria-hidden="true" />} label="Total orders" value={salesSummary.isPending ? '…' : salesSummary.isError ? '—' : (salesSummary.data?.totalOrders ?? 0).toLocaleString()} detail={salesSummary.isError ? <span role="alert">Could not load orders. <button type="button" className="row-action" onClick={() => salesSummary.refetch()}>Retry</button></span> : salesSummary.isPending ? 'Loading orders…' : salesSummary.data?.totalOrders === 0 ? 'No orders yet' : 'All statuses · accessible branches'} />
-        <ProductMetric icon={<span className="metric-symbol">◎</span>} label="Customers" value="—" detail="Customer data coming soon" />
+        <ProductMetric icon={<Users size={15} aria-hidden="true" />} label="Customers" value={!editor ? '—' : customerSummary.isPending ? '…' : customerSummary.isError ? '—' : customerSummary.data.totalCustomers.toLocaleString()} detail={!editor ? 'Owner/admin access only' : customerSummary.isError ? <span role="alert">Could not load customers. <button type="button" className="row-action" onClick={() => customerSummary.refetch()}>Retry</button></span> : customerSummary.isPending ? 'Loading customers…' : customerSummary.data.totalCustomers === 0 ? 'No customers yet' : 'All registered customers'} />
       </div>
 
       <div className="products-toolbar">

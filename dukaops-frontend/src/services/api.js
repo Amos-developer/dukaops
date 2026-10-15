@@ -102,6 +102,7 @@ async function apiFetchCollection(path) {
 }
 
 export const api = {
+  customerSummary: () => apiFetch('/contacts/customers/summary'),
   categories: () => apiFetch('/categories'),
   createCategory: (payload) => apiRequest('/categories', 'POST', payload),
   updateCategory: (id, payload) => apiRequest(`/categories/${id}`, 'PUT', payload),
