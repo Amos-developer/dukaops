@@ -82,6 +82,20 @@ async function apiRequest(path, method, payload) {
   return responseBody.trim() ? JSON.parse(responseBody) : null
 }
 
+async function apiFetchCollection(path) {
+  const first = await apiFetch(path)
+  const params = new URLSearchParams(path.split('?')[1] || '')
+  if (!Array.isArray(first?.content) || Number(params.get('page') || 0) !== 0 || first.totalPages <= 1) return first
+  const content = [...first.content]
+  for (let page = 1; page < first.totalPages; page += 1) {
+    params.set('page', String(page))
+    const next = await apiFetch(`${path.split('?')[0]}?${params}`)
+    if (!Array.isArray(next.content)) throw new Error('We could not load all records. Please try again.')
+    content.push(...next.content)
+  }
+  return { ...first, content }
+}
+
 export const api = {
   requestPasswordReset: (email) => apiRequest('/auth/forgot-password', 'POST', { email }),
   resetPassword: (token, password) => apiRequest('/auth/reset-password', 'POST', { token, password }),
@@ -105,18 +119,18 @@ export const api = {
     if (search) params.set('search', search)
     if (role) params.set('role', role)
     if (status) params.set('status', status)
-    return apiFetch(`/team/users?${params.toString()}`)
+    return apiFetchCollection(`/team/users?${params.toString()}`)
   },
   createTeamInvitation: (payload) => apiRequest('/team/invitations', 'POST', payload),
   updateTeamUserRole: (userId, role) => apiRequest(`/team/users/${userId}/role`, 'PATCH', { role }),
   updateTeamUserBranches: (userId, branchIds) => apiRequest(`/team/users/${userId}/branches`, 'PUT', { branchIds }),
   updateTeamUserStatus: (userId, status) => apiRequest(`/team/users/${userId}/status`, 'PATCH', { status }),
   salesSummary: () => apiFetch('/sales/summary'),
-  salesOrders: ({ search = '', status = '', page = 0, size = 20 } = {}) => { const params = new URLSearchParams({ page: String(page), size: String(size) }); if (search) params.set('search', search); if (status) params.set('status', status); return apiFetch(`/sales/orders?${params.toString()}`) },
+  salesOrders: ({ search = '', status = '', page = 0, size = 20 } = {}) => { const params = new URLSearchParams({ page: String(page), size: String(size) }); if (search) params.set('search', search); if (status) params.set('status', status); return apiFetchCollection(`/sales/orders?${params.toString()}`) },
   salesOrder: (id) => apiFetch(`/sales/orders/${id}`),
   checkout: (payload) => apiRequest('/sales/checkout', 'POST', payload),
   updateOrderStatus: (id, status) => apiRequest(`/sales/orders/${id}/status`, 'PATCH', { status }),
-  contacts: (type, { search = '', status = '', page = 0, size = 50 } = {}) => { const params = new URLSearchParams({ page: String(page), size: String(size) }); if (search) params.set('search', search); if (status) params.set('status', status); return apiFetch(`/contacts/${type}?${params.toString()}`) },
+  contacts: (type, { search = '', status = '', page = 0, size = 50 } = {}) => { const params = new URLSearchParams({ page: String(page), size: String(size) }); if (search) params.set('search', search); if (status) params.set('status', status); return apiFetchCollection(`/contacts/${type}?${params.toString()}`) },
   createContact: (type, payload) => apiRequest(`/contacts/${type}`, 'POST', payload),
   updateContact: (type, id, payload) => apiRequest(`/contacts/${type}/${id}`, 'PUT', payload),
   updateContactStatus: (type, id, status) => apiRequest(`/contacts/${type}/${id}/status?status=${status}`, 'PATCH'),
