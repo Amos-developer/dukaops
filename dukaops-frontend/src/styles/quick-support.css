@@ -1,0 +1,34 @@
+.quick-support{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:14px;color:#123452;font-family:inherit;pointer-events:none}
+.quick-support>*{pointer-events:auto;box-sizing:border-box}
+.quick-support-panel{width:min(360px,calc(100vw - 32px));max-height:calc(100dvh - 126px - env(safe-area-inset-bottom));overflow-y:auto;background:#fff;border:1px solid #dce9ee;border-radius:20px;box-shadow:0 18px 65px #0c2b4830;animation:support-reveal .22s ease-out}
+.quick-support-heading{display:flex;align-items:center;gap:12px;padding:20px;background:linear-gradient(120deg,#e9f6f5,#edf4fa);border-bottom:1px solid #dce9ee}
+.quick-support-heading-icon{display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:14px;color:#008b85;background:#d5eeeb}
+.quick-support-heading span{display:block;font-size:9px;font-weight:800;letter-spacing:.12em;color:#52778b}
+.quick-support-heading h2{margin:4px 0 0;font-size:19px;font-weight:800;letter-spacing:-.03em;color:#123452}
+.quick-support-close{display:grid;place-items:center;flex:none;margin-left:auto;width:36px;height:36px;border:0;border-radius:50%;background:#ffffffbd;color:#607d92;cursor:pointer}
+.quick-support-body{padding:20px}
+.quick-support-body>p{margin:0 0 7px;font-size:16px;font-weight:750;color:#123452}
+.quick-support-description{display:block;margin-bottom:18px;color:#688196;font-size:12px;line-height:1.65}
+.quick-support-call,.quick-support-whatsapp{display:flex;align-items:center;gap:12px;min-height:64px;padding:13px;border-radius:12px;text-decoration:none!important;transition:background .16s,box-shadow .16s}
+.quick-support-call{border:1px solid #dce9ee;color:#123452;background:#f8fbfd;margin-bottom:10px}
+.quick-support-call-icon{display:grid;place-items:center;width:36px;height:36px;flex:none;background:#e3f1f7;border-radius:10px;color:#256483}
+.quick-support-call>span:nth-child(2),.quick-support-whatsapp>span{flex:1}
+.quick-support-call small{display:block;font-size:11px;color:#688196;margin-bottom:3px}
+.quick-support-call strong{font-size:16px;font-weight:750;letter-spacing:.02em}
+.quick-support-call:hover{background:#edf5fa;color:#123452}
+.quick-support-whatsapp{background:#009e94;border:1px solid #009e94;color:#fff;font-size:14px;font-weight:750}
+.quick-support-whatsapp svg{flex:none}
+.quick-support-whatsapp small{display:block;font-size:10px;font-weight:400;color:#dcf7f3;margin-top:4px}
+.quick-support-whatsapp:hover{color:#fff;background:#00867e;box-shadow:0 5px 16px #009e9426}
+.quick-support-footer{padding:0 20px 17px;font-size:10px;color:#8095a4;text-align:center}
+.quick-support-launcher{position:relative;display:flex;align-items:center;gap:10px;min-height:58px;padding:9px 18px 9px 9px;background:#0d2b46;color:#fff;border:1px solid #24465e;border-radius:50px;box-shadow:0 8px 26px #0c2b4833;cursor:pointer;text-align:left}
+.quick-support-launcher-icon{display:grid;place-items:center;flex:none;width:40px;height:40px;background:#00a69c;color:#fff;border-radius:50%}
+.quick-support-launcher strong{display:block;font-size:13px;font-weight:750;line-height:1.4}
+.quick-support-launcher small{display:block;color:#c0d9e3;font-size:10px}
+.quick-support-wave{position:absolute;right:4px;top:-12px;font-size:20px;transform:rotate(-12deg)}
+.quick-support a:focus-visible,.quick-support button:focus-visible{outline:3px solid #39c8bf;outline-offset:4px}
+.quick-support-close:hover{background:#fff;color:#123452}
+@keyframes support-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:640px){.quick-support{right:28px;bottom:28px}.quick-support-panel{width:370px}.quick-support-heading{padding:22px}.quick-support-body{padding:22px}}
+@media(max-height:480px){.quick-support{bottom:8px;gap:8px}.quick-support-panel{max-height:calc(100dvh - 90px)}.quick-support-launcher{min-height:48px}}
+@media(prefers-reduced-motion:reduce){.quick-support-panel{animation:none}.quick-support a{transition:none}}
